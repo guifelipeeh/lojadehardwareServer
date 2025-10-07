@@ -1,18 +1,24 @@
-const Product = require('../model/product');
+// services/productService.js
+const { Product } = require('../model/product');
 
+class ProductService {
+    async createProduct(productData) {
+        // Remove campos desnecessários que podem vir do frontend
+        const { id, data_criacao, data_atualizacao, ...cleanData } = productData;
+        
+        return await Product.create(cleanData);
+    }
 
-async function addProduct(productData){
+    async getProductById(productId) {
+        return await Product.findByPk(productId);
+    }
 
-    try {
-        console.log(productData + " chegou na service");
-
-        const product = await Product.create(productData);
-        return product;
-    } catch (error) {
-        throw error;
+    async getProductsByUser(userId) {
+        return await Product.findAll({
+            where: { user_id: userId },
+            order: [['data_criacao', 'DESC']]
+        });
     }
 }
 
-module.exports = {
-    addProduct
-}
+module.exports = new ProductService();
