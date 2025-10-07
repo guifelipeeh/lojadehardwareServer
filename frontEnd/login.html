@@ -291,6 +291,8 @@
                     });
                     
                     const data = await response.json();
+
+                    console.log(data);
                     
                     if (response.ok) {
                         // Login bem-sucedido
@@ -299,12 +301,16 @@
                         // Armazenar token se existir
                         if (data.token) {
                             localStorage.setItem('token', data.token);
+                            localStorage.setItem('user', data.user.name);
+                            localStorage.setItem('userId', data.user.id);
+                            localStorage.setItem('email', data.user.email);
+                            localStorage.setItem('telefone', data.user.telefone);
                         }
                         
                         // Redirecionar após breve delay
                         setTimeout(() => {
                             window.location.href = 'index.html';
-                        }, 1500);
+                        }, 1000);
                     } else {
                         // Tratar erros específicos da API
                         let errorMessage = 'Erro ao fazer login';

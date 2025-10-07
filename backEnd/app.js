@@ -3,12 +3,27 @@ const express = require('express');
 const app = express();
 const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
+const productRoutes = require('./routes/productRoutes');
+
 
 // Importações CORRETAS
 const sequelize = require('./config/database'); // ✅ Importa a instância do Sequelize
 const User = require('./model/User'); // ✅ Verifique se o caminho está correto
 const Sessao = require('./model/Sessao'); 
+const Product = require('./model/product');
+const Association = require('./model/association');
+
+
+
+
+const upload = require('./config/multer'); // Configuração do multer
+// Middleware para servir arquivos estáticos (imagens)
+app.use('/media/image', express.static('uploads'));
 app.use(express.json());
+
+// Middleware para permitir requisições de diferentes origens
+app.use(cors());
+
 
 // Middleware para verificar se o banco está pronto
 let isDatabaseReady = false;
@@ -27,6 +42,12 @@ async function initializeDatabase() {
     await Sessao.sync({ alter: true });
     console.log('✅ Tabela Sessao sincronizada com sucesso.');
     
+    await Product.sync({ alter: true });
+    console.log('✅ Tabela Product sincronizada com sucesso.');
+    await Association.sync({ alter: true });
+    console.log('✅ Tabela Association sincronizada com sucesso.');
+
+
     isDatabaseReady = true;
     return true;
   } catch (error) {
@@ -55,6 +76,7 @@ app.use(cors());
 
 // Rotas
 app.use('/api/users', userRoutes);
+app.use('/api/products', productRoutes);
 
 // Rota de fallback
 

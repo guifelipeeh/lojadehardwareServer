@@ -42,17 +42,24 @@ const User = sequelize.define('User', {
     telefone: {
         type: DataTypes.STRING,
         allowNull: true,
-        
+
     },
     cpf: {
         type: DataTypes.STRING(14),
         allowNull: false,
         unique: true,
+    },
+    role: {
+        type: DataTypes.ENUM('admin', 'user'),
+        defaultValue: 'user',
+        allowNull: false,
+
     }
-}, {
-    timestamps: true,
-    tableName: 'users', // Nome mais convencional para tabelas
-    
-});
+},
+    {
+        timestamps: true,
+        tableName: 'users', // Nome mais convencional para tabelas
+
+    });
 
 module.exports = User;
