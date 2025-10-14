@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Produtos - Loja de Hardware</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2c3e50, #34495e);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 1.1em;
+        }
+
+        .form-container {
+            padding: 40px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: #f8f9fa;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        .file-upload {
+            border: 2px dashed #bdc3c7;
+            border-radius: 8px;
+            padding: 25px;
+            text-align: center;
+            background: #f8f9fa;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .file-upload:hover {
+            border-color: #3498db;
+            background: #e3f2fd;
+        }
+
+        .file-upload.dragover {
+            border-color: #27ae60;
+            background: #e8f5e8;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .file-list {
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: white;
+            border: 1px solid #e1e8ed;
+            border-radius: 6px;
+            margin-bottom: 5px;
+        }
+
+        .file-item .remove-file {
+            color: #e74c3c;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            color: white;
+            border: none;
+            padding: 16px;
+            font-size: 18px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(39, 174, 96, 0.3);
+        }
+
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 2s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .required::after {
+            content: " *";
+            color: #e74c3c;
+        }
+
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+            
+            .form-container {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛠️ Cadastro de Produtos</h1>
+            <p>Adicione novos produtos à sua loja de hardware</p>
+        </div>
+
+        <div class="form-container">
+            <div id="message" class="message"></div>
+
+            <form id="productForm" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="nome" class="required">Nome do Produto</label>
+                    <input type="text" id="nome" name="nome" required placeholder="Ex: Processador Intel Core i9-13900K">
+                </div>
+
+                <div class="form-group">
+                    <label for="descricao">Descrição do Produto</label>
+                    <textarea id="descricao" name="descricao" placeholder="Descreva as características e especificações do produto..."></textarea>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="preco" class="required">Preço (R$)</label>
+                        <input type="number" id="preco" name="preco" step="0.01" min="0.01" required placeholder="2899.99">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="estoque" class="required">Estoque</label>
+                        <input type="number" id="estoque" name="estoque" min="0" required value="0">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="categoria" class="required">Categoria</label>
+                        <select id="categoria" name="categoria" required>
+                            <option value="">Selecione uma categoria</option>
+                            <option value="Processadores">Processadores</option>
+                            <option value="Placas de Vídeo">Placas de Vídeo</option>
+                            <option value="Memória RAM">Memória RAM</option>
+                            <option value="Armazenamento">Armazenamento</option>
+                            <option value="Placas-mãe">Placas-mãe</option>
+                            <option value="Fontes">Fontes</option>
+                            <option value="Gabinetes">Gabinetes</option>
+                            <option value="Coolers">Coolers</option>
+                            <option value="Periféricos">Periféricos</option>
+                            <option value="Monitores">Monitores</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="marca">Marca</label>
+                        <input type="text" id="marca" name="marca" placeholder="Ex: Intel, NVIDIA, Corsair...">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="peso">Peso (kg)</label>
+                        <input type="number" id="peso" name="peso" step="0.01" min="0" placeholder="0.5">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="condicao">Condição</label>
+                        <select id="condicao" name="condicao">
+                            <option value="novo">Novo</option>
+                            <option value="usado">Usado</option>
+                            <option value="recondicionado">Recondicionado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="dimensoes">Dimensões (L x A x P)</label>
+                    <input type="text" id="dimensoes" name="dimensoes" placeholder="Ex: 45.0 x 34.0 x 12.0 mm">
+                </div>
+
+                <div class="form-group">
+                    <label for="tags">Tags (separadas por vírgula)</label>
+                    <input type="text" id="tags" name="tags" placeholder="Ex: processador, intel, core i9, gaming">
+                </div>
+
+                <div class="form-group">
+                    <label for="sku">SKU (Código do Produto)</label>
+                    <input type="text" id="sku" name="sku" placeholder="Deixe em branco para gerar automaticamente">
+
+                </div>
+
+                <div class="form-group">
+                    <label>User ID</label>
+                    <input type="text" id="user_id" name="user_id" placeholder="Deixe em branco para gerar automaticamente">
+
+                </div>
+
+                <!-- Upload de Imagem Principal -->
+                <div class="form-group">
+                    <label class="required">Imagem Principal</label>
+                    <div class="file-upload" id="mainImageUpload">
+                        <div class="upload-icon">📷</div>
+                        <p>Clique para selecionar ou arraste a imagem principal</p>
+                        <p style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                            Formatos: JPG, PNG, GIF, WEBP (Max: 5MB)
+                        </p>
+                        <input type="file" id="imagem_principal" name="imagem_principal" class="file-input" accept="image/*" required>
+                    </div>
+                    <div class="file-list" id="mainImageList"></div>
+                </div>
+
+                <!-- Upload de Imagens Adicionais -->
+                <div class="form-group">
+                    <label>Imagens Adicionais (até 5 imagens)</label>
+                    <div class="file-upload" id="additionalImagesUpload">
+                        <div class="upload-icon">🖼️</div>
+                        <p>Clique para selecionar ou arraste imagens adicionais</p>
+                        <p style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
+                            Você pode selecionar múltiplas imagens
+                        </p>
+                        <input type="file" id="imagens_adicionais" name="imagens_adicionais" class="file-input" accept="image/*" multiple>
+                    </div>
+                    <div class="file-list" id="additionalImagesList"></div>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    🚀 Cadastrar Produto
+                </button>
+            </form>
+
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Cadastrando produto...</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Elementos DOM
+        const form = document.getElementById('productForm');
+        const messageDiv = document.getElementById('message');
+        const loadingDiv = document.getElementById('loading');
+        const mainImageUpload = document.getElementById('mainImageUpload');
+        const additionalImagesUpload = document.getElementById('additionalImagesUpload');
+        const mainImageInput = document.getElementById('imagem_principal');
+        const additionalImagesInput = document.getElementById('imagens_adicionais');
+        const mainImageList = document.getElementById('mainImageList');
+        const additionalImagesList = document.getElementById('additionalImagesList');
+
+        // Token JWT (substitua pelo token real do seu usuário)
+        const JWT_TOKEN = 'seu_jwt_token_aqui';
+
+        // Função para mostrar mensagens
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.className = `message ${type}`;
+            messageDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Drag and Drop para imagens principais
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            mainImageUpload.addEventListener(eventName, preventDefaults, false);
+            additionalImagesUpload.addEventListener(eventName, preventDefaults, false);
+        });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            mainImageUpload.addEventListener(eventName, () => mainImageUpload.classList.add('dragover'), false);
+            additionalImagesUpload.addEventListener(eventName, () => additionalImagesUpload.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            mainImageUpload.addEventListener(eventName, () => mainImageUpload.classList.remove('dragover'), false);
+            additionalImagesUpload.addEventListener(eventName, () => additionalImagesUpload.classList.remove('dragover'), false);
+        });
+
+        mainImageUpload.addEventListener('drop', handleDropMainImage, false);
+        additionalImagesUpload.addEventListener('drop', handleDropAdditionalImages, false);
+
+        function handleDropMainImage(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            mainImageInput.files = files;
+            updateMainImageList();
+        }
+
+        function handleDropAdditionalImages(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            additionalImagesInput.files = files;
+            updateAdditionalImagesList();
+        }
+
+        // Clique para selecionar arquivos
+        mainImageUpload.addEventListener('click', () => mainImageInput.click());
+        additionalImagesUpload.addEventListener('click', () => additionalImagesInput.click());
+
+        // Atualizar lista de arquivos
+        mainImageInput.addEventListener('change', updateMainImageList);
+        additionalImagesInput.addEventListener('change', updateAdditionalImagesList);
+
+        function updateMainImageList() {
+            mainImageList.innerHTML = '';
+            if (mainImageInput.files.length > 0) {
+                const file = mainImageInput.files[0];
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item';
+                fileItem.innerHTML = `
+                    <span>${file.name}</span>
+                    <span class="remove-file" onclick="removeMainImage()">✕</span>
+                `;
+                mainImageList.appendChild(fileItem);
+            }
+        }
+
+        function updateAdditionalImagesList() {
+            additionalImagesList.innerHTML = '';
+            if (additionalImagesInput.files.length > 0) {
+                for (let file of additionalImagesInput.files) {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    fileItem.innerHTML = `
+                        <span>${file.name}</span>
+                        <span class="remove-file" onclick="removeAdditionalImage('${file.name}')">✕</span>
+                    `;
+                    additionalImagesList.appendChild(fileItem);
+                }
+            }
+        }
+
+        // Funções para remover arquivos
+        window.removeMainImage = function() {
+            mainImageInput.value = '';
+            mainImageList.innerHTML = '';
+        }
+
+        window.removeAdditionalImage = function(filename) {
+            const dt = new DataTransfer();
+            for (let file of additionalImagesInput.files) {
+                if (file.name !== filename) {
+                    dt.items.add(file);
+                }
+            }
+            additionalImagesInput.files = dt.files;
+            updateAdditionalImagesList();
+        }
+
+        // Envio do formulário
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Validações básicas
+            if (!mainImageInput.files.length) {
+                showMessage('Por favor, selecione uma imagem principal', 'error');
+                return;
+            }
+
+            loadingDiv.style.display = 'block';
+            form.style.display = 'none';
+
+            try {
+                const formData = new FormData(form);
+
+                console.log('enviano ao server')
+
+                const response = await fetch('http://localhost:3000/api/products/addProduct', {
+                    method: 'POST',
+
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showMessage('✅ Produto cadastrado com sucesso!', 'success');
+                    form.reset();
+                    mainImageList.innerHTML = '';
+                    additionalImagesList.innerHTML = '';
+                } else {
+                    showMessage(`❌ Erro: ${result.error}`, 'error');
+                }
+
+            } catch (error) {
+                showMessage(`❌ Erro de conexão: ${error.message}`, 'error');
+            } finally {
+                loadingDiv.style.display = 'none';
+                form.style.display = 'block';
+            }
+        });
+
+        // Preencher token automaticamente (para desenvolvimento)
+        function getTokenFromStorage() {
+            // Tenta obter o token do localStorage ou sessionStorage
+            return localStorage.getItem('jwt_token') || 
+                   sessionStorage.getItem('jwt_token') || 
+                   JWT_TOKEN;
+        }
+
+        // Atualizar token quando a página carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = getTokenFromStorage();
+            if (token && token !== 'seu_jwt_token_aqui') {
+                JWT_TOKEN = token;
+            }
+        });
+    </script>
+</body>
+</html>

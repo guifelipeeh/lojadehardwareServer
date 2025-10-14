@@ -1,7 +1,7 @@
 // services/uploadService.js
 const fs = require('fs').promises;
 const path = require('path');
-const { Product } = require('../model/product');
+const Product = require('../model/product');
 
 class UploadService {
     constructor() {
