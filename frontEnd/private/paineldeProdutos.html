@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel Administrativo - Produtos</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --success-color: #28a745;
+            --danger-color: #dc3545;
+            --warning-color: #ffc107;
+            --info-color: #17a2b8;
+            --dark-color: #343a40;
+            --light-color: #f8f9fa;
+            --bg-color: #f5f7fb;
+            --text-color: #333;
+            --card-bg: #ffffff;
+            --sidebar-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --border-color: #dee2e6;
+        }
+
+        [data-theme="dark"] {
+            --primary-color: #8fa1f0;
+            --secondary-color: #9b6bd4;
+            --bg-color: #1a1d23;
+            --text-color: #e9ecef;
+            --card-bg: #2d3035;
+            --sidebar-bg: linear-gradient(135deg, #2d3748 0%, #4a5568 100%);
+            --border-color: #495057;
+            --light-color: #495057;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar {
+            background: var(--sidebar-bg);
+            color: white;
+            min-height: 100vh;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .sidebar .nav-link {
+            color: rgba(255, 255, 255, 0.8);
+            padding: 12px 20px;
+            margin: 5px 0;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            color: white;
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar .nav-link i {
+            margin-right: 10px;
+            font-size: 1.2rem;
+        }
+
+        .main-content {
+            padding: 20px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+            transition: transform 0.3s;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .stat-card i {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+
+        .stat-card .number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin: 10px 0;
+        }
+
+        .stat-card .label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .bg-primary-light {
+            background-color: rgba(102, 126, 234, 0.1);
+            color: var(--primary-color);
+        }
+
+        .bg-success-light {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success-color);
+        }
+
+        .bg-warning-light {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--warning-color);
+        }
+
+        .bg-info-light {
+            background-color: rgba(23, 162, 184, 0.1);
+            color: var(--info-color);
+        }
+
+        .table-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-top: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .table {
+            color: var(--text-color);
+            margin-bottom: 0;
+        }
+
+        .table th {
+            border-bottom: 2px solid var(--border-color);
+            font-weight: 600;
+        }
+
+        .table td {
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+
+        .product-image {
+            width: 50px;
+            height: 50px;
+            border-radius: 8px;
+            object-fit: cover;
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .action-btn {
+            padding: 5px 10px;
+            margin: 0 2px;
+            border-radius: 5px;
+            border: none;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .btn-view {
+            background-color: rgba(23, 162, 184, 0.1);
+            color: var(--info-color);
+        }
+
+        .btn-edit {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--warning-color);
+        }
+
+        .btn-delete {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger-color);
+        }
+
+        .btn-view:hover,
+        .btn-edit:hover,
+        .btn-delete:hover {
+            transform: scale(1.1);
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-footer {
+            border-top: 1px solid var(--border-color);
+        }
+
+        .search-box {
+            position: relative;
+        }
+
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 12px;
+            color: #6c757d;
+        }
+
+        .search-box input {
+            padding-left: 40px;
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .search-box input:focus {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .page-title {
+            color: var(--text-color);
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .badge-category {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .price-tag {
+            font-weight: bold;
+            color: var(--success-color);
+        }
+
+        .stock-badge {
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .stock-high {
+            background-color: rgba(40, 167, 69, 0.1);
+            color: var(--success-color);
+        }
+
+        .stock-medium {
+            background-color: rgba(255, 193, 7, 0.1);
+            color: var(--warning-color);
+        }
+
+        .stock-low {
+            background-color: rgba(220, 53, 69, 0.1);
+            color: var(--danger-color);
+        }
+
+        .form-control,
+        .form-select,
+        .form-textarea {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .form-control:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .pagination .page-link {
+            background-color: var(--card-bg);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .pagination .page-link:hover {
+            background-color: var(--light-color);
+            border-color: var(--border-color);
+        }
+
+        .dropdown-menu {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+        }
+
+        .dropdown-item {
+            color: var(--text-color);
+        }
+
+        .dropdown-item:hover {
+            background-color: rgba(102, 126, 234, 0.1);
+            color: var(--text-color);
+        }
+
+        .settings-panel {
+            position: fixed;
+            top: 50%;
+            right: -300px;
+            transform: translateY(-50%);
+            width: 300px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 10px 0 0 10px;
+            padding: 20px;
+            box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+            transition: right 0.3s ease;
+            z-index: 1050;
+        }
+
+        .settings-panel.open {
+            right: 0;
+        }
+
+        .settings-toggle {
+            position: absolute;
+            left: -40px;
+            top: 20px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px 0 0 5px;
+            padding: 10px;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            margin: 5px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            display: inline-block;
+        }
+
+        .color-option.active {
+            border-color: var(--text-color);
+            transform: scale(1.1);
+        }
+
+        .color-option:hover {
+            transform: scale(1.1);
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1060;
+            min-width: 300px;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1070;
+            display: none;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .file-upload {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            background: var(--card-bg);
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .file-upload:hover {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        .file-upload.dragover {
+            border-color: var(--success-color);
+            background: rgba(40, 167, 69, 0.05);
+        }
+
+        .file-input {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .upload-icon {
+            font-size: 36px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        .file-list {
+            margin-top: 15px;
+            text-align: left;
+        }
+
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 12px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 5px;
+        }
+
+        .file-item .remove-file {
+            color: var(--danger-color);
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .image-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            object-fit: cover;
+            margin: 5px;
+            border: 1px solid var(--border-color);
+        }
+
+        .image-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .tab-content {
+            margin-top: 20px;
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--text-color);
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+
+        .nav-tabs .nav-link:not(.active):hover {
+            background-color: var(--light-color);
+            border: none;
+        }
+
+        .advanced-filters {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .batch-actions {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .product-badge {
+            font-size: 0.7rem;
+            margin-left: 5px;
+        }
+
+        .export-progress {
+            display: none;
+            margin-top: 10px;
+        }
+
+        .image-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .gallery-image {
+            width: 100%;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .gallery-image:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="text-white mt-3">Processando...</div>
+    </div>
+
+    <!-- Settings Panel -->
+    <div class="settings-panel" id="settingsPanel">
+        <button class="settings-toggle" onclick="toggleSettings()">
+            <i class="bi bi-palette"></i>
+        </button>
+        <h5 class="mb-4"><i class="bi bi-sliders"></i> Configurações</h5>
+
+        <div class="mb-4">
+            <label class="form-label fw-bold">Tema</label>
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-primary flex-fill" onclick="setTheme('light')">
+                    <i class="bi bi-sun"></i> Claro
+                </button>
+                <button class="btn btn-outline-primary flex-fill" onclick="setTheme('dark')">
+                    <i class="bi bi-moon"></i> Escuro
+                </button>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label fw-bold">Cores Primárias</label>
+            <div class="d-flex flex-wrap justify-content-center">
+                <div class="color-option active" style="background-color: #667eea;" onclick="setPrimaryColor('#667eea')"
+                    title="Azul"></div>
+                <div class="color-option" style="background-color: #e53e3e;" onclick="setPrimaryColor('#e53e3e')"
+                    title="Vermelho"></div>
+                <div class="color-option" style="background-color: #38a169;" onclick="setPrimaryColor('#38a169')"
+                    title="Verde"></div>
+                <div class="color-option" style="background-color: #d69e2e;" onclick="setPrimaryColor('#d69e2e')"
+                    title="Amarelo"></div>
+                <div class="color-option" style="background-color: #3182ce;" onclick="setPrimaryColor('#3182ce')"
+                    title="Azul Claro"></div>
+                <div class="color-option" style="background-color: #805ad5;" onclick="setPrimaryColor('#805ad5')"
+                    title="Roxo"></div>
+            </div>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label fw-bold">Itens por Página</label>
+            <select class="form-select" id="itemsPerPage" onchange="updateItemsPerPage()">
+                <option value="5">5 itens</option>
+                <option value="10" selected>10 itens</option>
+                <option value="20">20 itens</option>
+                <option value="50">50 itens</option>
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label fw-bold">Ordenação</label>
+            <select class="form-select" id="sortBy" onchange="applySorting()">
+                <option value="name">Nome A-Z</option>
+                <option value="name_desc">Nome Z-A</option>
+                <option value="price_high">Preço (Maior)</option>
+                <option value="price_low">Preço (Menor)</option>
+                <option value="stock_high">Estoque (Maior)</option>
+                <option value="stock_low">Estoque (Menor)</option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label fw-bold">Exportar Dados</label>
+            <div class="d-grid gap-2">
+                <button class="btn btn-outline-success btn-sm" onclick="exportToCSV()">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> CSV
+                </button>
+                <button class="btn btn-outline-primary btn-sm" onclick="exportToJSON()">
+                    <i class="bi bi-code-slash"></i> JSON
+                </button>
+                <button class="btn btn-outline-danger btn-sm" onclick="exportToPDF()">
+                    <i class="bi bi-file-pdf"></i> PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Area -->
+    <div class="notification" id="notificationArea"></div>
+
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3 col-lg-2 sidebar p-0">
+                <div class="d-flex flex-column p-3">
+                    <div class="text-center mb-4 mt-3">
+                        <div class="product-image mx-auto mb-3" style="width: 60px; height: 60px; font-size: 1.5rem;">
+                            <i class="bi bi-cpu"></i>
+                        </div>
+                        <h5>Hardware Store</h5>
+                        <p class="text-muted small">Painel Administrativo</p>
+                    </div>
+
+                    <ul class="nav nav-pills flex-column mb-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="bi bi-speedometer2"></i> Dashboard
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="navigateToUsers()">
+                                <i class="bi bi-people"></i> Usuários
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link active">
+                                <i class="bi bi-box-seam"></i> Produtos
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link">
+                                <i class="bi bi-graph-up"></i> Estatísticas
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" onclick="toggleSettings()">
+                                <i class="bi bi-palette"></i> Aparência
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="dropdown mt-auto border-top pt-3">
+                        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle"
+                            id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                            <div class="product-image me-2">A</div>
+                            <div>
+                                <strong>Administrador</strong>
+                                <div class="small">Super Admin</div>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-dark text-small shadow" aria-labelledby="dropdownUser">
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-person"></i> Perfil</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="toggleSettings()"><i
+                                        class="bi bi-palette"></i> Aparência</a></li>
+                            <li>
+                                <hr class="dropdown-divider">
+                            </li>
+                            <li><a class="dropdown-item" href="#"><i class="bi bi-box-arrow-right"></i> Sair</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-md-9 col-lg-10 main-content">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <div>
+                        <h2 class="page-title mb-1">Gerenciamento de Produtos</h2>
+                        <p class="text-muted mb-0">Gerencie todos os produtos da sua loja de hardware</p>
+                    </div>
+                    <div>
+                        <button class="btn btn-outline-secondary me-2" onclick="toggleSettings()" title="Configurações">
+                            <i class="bi bi-sliders"></i>
+                        </button>
+                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                            <i class="bi bi-plus-circle"></i> Adicionar Produto
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Abas de Navegação -->
+                <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="list-tab" data-bs-toggle="tab" data-bs-target="#list"
+                            type="button" role="tab">
+                            <i class="bi bi-list-ul"></i> Lista de Produtos
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button"
+                            role="tab">
+                            <i class="bi bi-plus-square"></i> Cadastro Rápido
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="batch-tab" data-bs-toggle="tab" data-bs-target="#batch" type="button"
+                            role="tab">
+                            <i class="bi bi-collection"></i> Ações em Lote
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Conteúdo das Abas -->
+                <div class="tab-content" id="productTabsContent">
+                    <!-- Aba: Lista de Produtos -->
+                    <div class="tab-pane fade show active" id="list" role="tabpanel">
+                        <!-- Statistics Cards -->
+                        <div class="stats-grid">
+                            <div class="card stat-card bg-primary-light">
+                                <i class="bi bi-box-seam"></i>
+                                <div class="number" id="totalProducts">0</div>
+                                <div class="label">Total de Produtos</div>
+                            </div>
+                            <div class="card stat-card bg-success-light">
+                                <i class="bi bi-check-circle"></i>
+                                <div class="number" id="activeProducts">0</div>
+                                <div class="label">Produtos Ativos</div>
+                            </div>
+                            <div class="card stat-card bg-warning-light">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                <div class="number" id="lowStockProducts">0</div>
+                                <div class="label">Estoque Baixo</div>
+                            </div>
+                            <div class="card stat-card bg-info-light">
+                                <i class="bi bi-currency-dollar"></i>
+                                <div class="number" id="totalValue">R$ 0</div>
+                                <div class="label">Valor em Estoque</div>
+                            </div>
+                        </div>
+
+                        <!-- Filtros Avançados -->
+                        <div class="advanced-filters">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="search-box">
+                                        <i class="bi bi-search"></i>
+                                        <input type="text" class="form-control" id="searchInput"
+                                            placeholder="Buscar produtos por nome, descrição ou marca...">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="filterCategory">
+                                        <option value="">Todas as categorias</option>
+                                        <option value="Processadores">Processadores</option>
+                                        <option value="Placas de Vídeo">Placas de Vídeo</option>
+                                        <option value="Memória RAM">Memória RAM</option>
+                                        <option value="Armazenamento">Armazenamento</option>
+                                        <option value="Placas-mãe">Placas-mãe</option>
+                                        <option value="Fontes">Fontes</option>
+                                        <option value="Gabinetes">Gabinetes</option>
+                                        <option value="Coolers">Coolers</option>
+                                        <option value="Periféricos">Periféricos</option>
+                                        <option value="Monitores">Monitores</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <select class="form-select" id="filterStock">
+                                        <option value="">Todos os estoques</option>
+                                        <option value="high">Estoque Alto (>20)</option>
+                                        <option value="medium">Estoque Médio (6-20)</option>
+                                        <option value="low">Estoque Baixo (≤5)</option>
+                                        <option value="out">Sem Estoque</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mt-2">
+                                <div class="col-md-4">
+                                    <input type="number" class="form-control" id="filterPriceMin" placeholder="Preço mínimo">
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="number" class="form-control" id="filterPriceMax" placeholder="Preço máximo">
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-outline-secondary flex-fill" id="clearFilters">
+                                            <i class="bi bi-arrow-clockwise"></i> Limpar
+                                        </button>
+                                        <div class="dropdown">
+                                            <button class="btn btn-outline-primary dropdown-toggle" type="button"
+                                                data-bs-toggle="dropdown">
+                                                <i class="bi bi-download"></i> Exportar
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#" onclick="exportToCSV()"><i
+                                                            class="bi bi-file-earmark-spreadsheet"></i> CSV</a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="exportToJSON()"><i
+                                                            class="bi bi-code-slash"></i> JSON</a></li>
+                                                <li><a class="dropdown-item" href="#" onclick="exportToPDF()"><i
+                                                            class="bi bi-file-pdf"></i> PDF</a></li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Products Table -->
+                        <div class="table-container mt-4">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0">
+                                    <i class="bi bi-list-ul"></i> Lista de Produtos
+                                    <span class="badge bg-primary ms-2" id="productsCount">0</span>
+                                </h5>
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2 small text-muted">Ordenar por:</span>
+                                    <select class="form-select form-select-sm w-auto" id="tableSort"
+                                        onchange="applySorting()">
+                                        <option value="name">Nome A-Z</option>
+                                        <option value="name_desc">Nome Z-A</option>
+                                        <option value="price_high">Preço ↑</option>
+                                        <option value="price_low">Preço ↓</option>
+                                        <option value="stock_high">Estoque ↑</option>
+                                        <option value="stock_low">Estoque ↓</option>
+                                        <option value="recent">Mais Recentes</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table class="table table-hover" id="productsTable">
+                                    <thead>
+                                        <tr>
+                                            <th width="50">
+                                                <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
+                                            </th>
+                                            <th>ID</th>
+                                            <th>Produto</th>
+                                            <th>Categoria</th>
+                                            <th>Preço</th>
+                                            <th>Estoque</th>
+                                            <th>Marca</th>
+                                            <th>Status</th>
+                                            <th>Ações</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="productsTableBody">
+                                        <!-- Products will be loaded here dynamically -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div class="text-muted small">
+                                    Mostrando <span id="showingStart">0</span> - <span id="showingEnd">0</span> de <span
+                                        id="totalCount">0</span> produtos
+                                </div>
+                                <nav aria-label="Page navigation">
+                                    <ul class="pagination justify-content-center mb-0" id="pagination">
+                                        <!-- Pagination will be generated here -->
+                                    </ul>
+                                </nav>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aba: Cadastro Rápido -->
+                    <div class="tab-pane fade" id="add" role="tabpanel">
+                        <div class="table-container">
+                            <h5 class="mb-4"><i class="bi bi-plus-square"></i> Cadastro Rápido de Produto</h5>
+
+                            <form id="quickProductForm" enctype="multipart/form-data">
+                                <div id="quickMessage" class="alert" style="display: none;"></div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="quickNome" class="form-label required">Nome do Produto</label>
+                                            <input type="text" class="form-control" id="quickNome" name="nome" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="quickCategoria" class="form-label required">Categoria</label>
+                                            <select class="form-select" id="quickCategoria" name="categoria" required>
+                                                <option value="">Selecione uma categoria</option>
+                                                <option value="Processadores">Processadores</option>
+                                                <option value="Placas de Vídeo">Placas de Vídeo</option>
+                                                <option value="Memória RAM">Memória RAM</option>
+                                                <option value="Armazenamento">Armazenamento</option>
+                                                <option value="Placas-mãe">Placas-mãe</option>
+                                                <option value="Fontes">Fontes</option>
+                                                <option value="Gabinetes">Gabinetes</option>
+                                                <option value="Coolers">Coolers</option>
+                                                <option value="Periféricos">Periféricos</option>
+                                                <option value="Monitores">Monitores</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="quickPreco" class="form-label required">Preço (R$)</label>
+                                            <input type="number" class="form-control" id="quickPreco" name="preco"
+                                                step="0.01" min="0.01" required>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="quickEstoque" class="form-label required">Estoque</label>
+                                            <input type="number" class="form-control" id="quickEstoque" name="estoque"
+                                                min="0" required value="0">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="quickMarca" class="form-label">Marca</label>
+                                            <input type="text" class="form-control" id="quickMarca" name="marca">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="quickDescricao" class="form-label">Descrição</label>
+                                    <textarea class="form-control form-textarea" id="quickDescricao" name="descricao"
+                                        rows="3"></textarea>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="quickCondicao" class="form-label">Condição</label>
+                                            <select class="form-select" id="quickCondicao" name="condicao">
+                                                <option value="novo">Novo</option>
+                                                <option value="usado">Usado</option>
+                                                <option value="recondicionado">Recondicionado</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="quickTags" class="form-label">Tags</label>
+                                            <input type="text" class="form-control" id="quickTags" name="tags"
+                                                placeholder="Separadas por vírgula">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label required">Imagem Principal</label>
+                                    <div class="file-upload" id="quickMainImageUpload">
+                                        <div class="upload-icon">📷</div>
+                                        <p>Clique para selecionar ou arraste a imagem principal</p>
+                                        <input type="file" id="quickImagemPrincipal" name="imagem_principal"
+                                            class="file-input" accept="image/*">
+                                    </div>
+                                    <div class="file-list" id="quickMainImageList"></div>
+                                </div>
+
+                                <div class="mb-4">
+                                    <label class="form-label">Imagens Adicionais</label>
+                                    <div class="file-upload" id="quickAdditionalImagesUpload">
+                                        <div class="upload-icon">🖼️</div>
+                                        <p>Clique para selecionar ou arraste imagens adicionais</p>
+                                        <input type="file" id="quickImagensAdicionais" name="imagens_adicionais"
+                                            class="file-input" accept="image/*" multiple>
+                                    </div>
+                                    <div class="file-list" id="quickAdditionalImagesList"></div>
+                                </div>
+
+                                <div class="d-grid">
+                                    <button type="submit" class="btn btn-primary btn-lg">
+                                        <i class="bi bi-check-circle"></i> Cadastrar Produto
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Aba: Ações em Lote -->
+                    <div class="tab-pane fade" id="batch" role="tabpanel">
+                        <div class="table-container">
+                            <h5 class="mb-4"><i class="bi bi-collection"></i> Ações em Lote</h5>
+                            
+                            <div class="batch-actions">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">Ação</label>
+                                            <select class="form-select" id="batchAction">
+                                                <option value="">Selecione uma ação</option>
+                                                <option value="updateStock">Atualizar Estoque</option>
+                                                <option value="updatePrice">Atualizar Preço</option>
+                                                <option value="updateCategory">Atualizar Categoria</option>
+                                                <option value="activate">Ativar Produtos</option>
+                                                <option value="deactivate">Desativar Produtos</option>
+                                                <option value="delete">Excluir Produtos</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">Valor</label>
+                                            <input type="text" class="form-control" id="batchValue" placeholder="Valor para a ação">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label class="form-label">&nbsp;</label>
+                                            <button class="btn btn-primary w-100" onclick="executeBatchAction()">
+                                                <i class="bi bi-play-circle"></i> Executar Ação
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-3">
+                                    <p class="text-muted small">
+                                        <i class="bi bi-info-circle"></i> Selecione os produtos na aba "Lista de Produtos" antes de executar ações em lote.
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div class="mt-4">
+                                <h6>Importar Produtos</h6>
+                                <div class="file-upload" id="importUpload">
+                                    <div class="upload-icon">📁</div>
+                                    <p>Clique para selecionar arquivo CSV para importação</p>
+                                    <input type="file" id="importFile" class="file-input" accept=".csv">
+                                </div>
+                                <div class="mt-2">
+                                    <button class="btn btn-success" onclick="importProducts()">
+                                        <i class="bi bi-upload"></i> Importar Produtos
+                                    </button>
+                                    <a href="#" class="btn btn-outline-secondary ms-2" onclick="downloadTemplate()">
+                                        <i class="bi bi-download"></i> Baixar Template
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals (mantenha os modais existentes) -->
+    <!-- Add Product Modal, Edit Product Modal, View Product Modal, Delete Confirmation Modal -->
+
+    <!-- Bootstrap & Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Configurações globais
+        let products = [];
+        let currentPage = 1;
+        let productsPerPage = 10;
+        let currentTheme = 'light';
+        let primaryColor = '#667eea';
+        let currentSort = 'name';
+        let selectedProducts = new Set();
+
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function () {
+            loadSettings();
+            loadProducts();
+            setupEventListeners();
+            setupFileUploads();
+        });
+
+        function navigateToUsers() {
+            window.location.href = 'paineldeUsuarios.html';
+        }
+
+        // CORREÇÃO: Configurar cor primária sem usar event
+        function setPrimaryColor(color, showNotification = true) {
+            primaryColor = color;
+            document.documentElement.style.setProperty('--primary-color', color);
+
+            // Atualizar gradientes
+            const shades = generateColorShades(color);
+            document.documentElement.style.setProperty('--secondary-color', shades.dark);
+
+            // Atualizar botões ativos
+            document.querySelectorAll('.color-option').forEach(option => {
+                option.classList.remove('active');
+                if (option.style.backgroundColor === color) {
+                    option.classList.add('active');
+                }
+            });
+
+            if (showNotification) {
+                showNotification('Cor primária alterada', 'success');
+            }
+
+            localStorage.setItem('primaryColor', color);
+        }
+
+        // CORREÇÃO: Configurar upload de arquivos
+        function setupFileUploads() {
+            const uploadConfigs = [
+                { container: 'quickMainImageUpload', input: 'quickImagemPrincipal', list: 'quickMainImageList' },
+                { container: 'quickAdditionalImagesUpload', input: 'quickImagensAdicionais', list: 'quickAdditionalImagesList' },
+                { container: 'modalMainImageUpload', input: 'modalImagemPrincipal', list: 'modalMainImageList' },
+                { container: 'modalAdditionalImagesUpload', input: 'modalImagensAdicionais', list: 'modalAdditionalImagesList' },
+                { container: 'editMainImageUpload', input: 'editImagemPrincipal', list: 'editMainImageList' },
+                { container: 'importUpload', input: 'importFile', list: null }
+            ];
+
+            uploadConfigs.forEach(config => {
+                const container = document.getElementById(config.container);
+                const input = document.getElementById(config.input);
+                const list = config.list ? document.getElementById(config.list) : null;
+
+                if (container && input) {
+                    // CORREÇÃO: Usar input overlay para melhor UX
+                    input.addEventListener('change', function(e) {
+                        if (list) {
+                            updateFileList(input, list);
+                        }
+                    });
+
+                    // Drag and drop
+                    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                        container.addEventListener(eventName, preventDefaults, false);
+                    });
+
+                    ['dragenter', 'dragover'].forEach(eventName => {
+                        container.addEventListener(eventName, () => container.classList.add('dragover'), false);
+                    });
+
+                    ['dragleave', 'drop'].forEach(eventName => {
+                        container.addEventListener(eventName, () => container.classList.remove('dragover'), false);
+                    });
+
+                    container.addEventListener('drop', (e) => {
+                        const dt = e.dataTransfer;
+                        const files = dt.files;
+                        input.files = files;
+                        if (list) {
+                            updateFileList(input, list);
+                        }
+                    });
+                }
+            });
+        }
+
+        // Funções profissionais adicionadas
+        function toggleSelectAll() {
+            const selectAll = document.getElementById('selectAll');
+            const checkboxes = document.querySelectorAll('.product-checkbox');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAll.checked;
+                if (selectAll.checked) {
+                    selectedProducts.add(parseInt(checkbox.value));
+                } else {
+                    selectedProducts.delete(parseInt(checkbox.value));
+                }
+            });
+            
+            updateSelectedCount();
+        }
+
+        function toggleProductSelection(productId) {
+            if (selectedProducts.has(productId)) {
+                selectedProducts.delete(productId);
+            } else {
+                selectedProducts.add(productId);
+            }
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const count = selectedProducts.size;
+            const badge = document.getElementById('selectedCount');
+            if (badge) {
+                badge.textContent = count;
+            }
+        }
+
+        function executeBatchAction() {
+            const action = document.getElementById('batchAction').value;
+            const value = document.getElementById('batchValue').value;
+
+            if (selectedProducts.size === 0) {
+                showNotification('Selecione pelo menos um produto', 'warning');
+                return;
+            }
+
+            if (!action) {
+                showNotification('Selecione uma ação', 'warning');
+                return;
+            }
+
+            showLoading(true);
+
+            // Simulação de processamento em lote
+            setTimeout(() => {
+                const productIds = Array.from(selectedProducts);
+                
+                switch (action) {
+                    case 'updateStock':
+                        updateProductsStock(productIds, parseInt(value));
+                        break;
+                    case 'updatePrice':
+                        updateProductsPrice(productIds, parseFloat(value));
+                        break;
+                    case 'delete':
+                        deleteProductsBatch(productIds);
+                        break;
+                    default:
+                        showNotification('Ação não implementada', 'warning');
+                }
+                
+                showLoading(false);
+            }, 2000);
+        }
+
+        function updateProductsStock(productIds, stock) {
+            productIds.forEach(id => {
+                const product = products.find(p => p.id === id);
+                if (product) {
+                    product.estoque = stock;
+                }
+            });
+            renderProducts();
+            showNotification(`Estoque atualizado para ${productIds.length} produtos`, 'success');
+        }
+
+        function updateProductsPrice(productIds, price) {
+            productIds.forEach(id => {
+                const product = products.find(p => p.id === id);
+                if (product) {
+                    product.preco = price;
+                }
+            });
+            renderProducts();
+            showNotification(`Preço atualizado para ${productIds.length} produtos`, 'success');
+        }
+
+        function deleteProductsBatch(productIds) {
+            if (confirm(`Tem certeza que deseja excluir ${productIds.length} produtos?`)) {
+                products = products.filter(p => !productIds.includes(p.id));
+                selectedProducts.clear();
+                renderProducts();
+                updateStatistics();
+                showNotification(`${productIds.length} produtos excluídos com sucesso`, 'success');
+            }
+        }
+
+        function importProducts() {
+            const fileInput = document.getElementById('importFile');
+            if (!fileInput.files.length) {
+                showNotification('Selecione um arquivo CSV', 'warning');
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function(e) {
+                try {
+                    const csvData = e.target.result;
+                    const importedProducts = parseCSV(csvData);
+                    
+                    if (importedProducts.length > 0) {
+                        products = [...products, ...importedProducts];
+                        renderProducts();
+                        updateStatistics();
+                        showNotification(`${importedProducts.length} produtos importados com sucesso`, 'success');
+                        fileInput.value = '';
+                    }
+                } catch (error) {
+                    showNotification('Erro ao importar arquivo: ' + error.message, 'danger');
+                }
+            };
+
+            reader.readAsText(file);
+        }
+
+        function parseCSV(csvData) {
+            const lines = csvData.split('\n');
+            const products = [];
+            const headers = lines[0].split(',').map(h => h.trim());
+
+            for (let i = 1; i < lines.length; i++) {
+                if (lines[i].trim()) {
+                    const values = lines[i].split(',').map(v => v.trim());
+                    const product = {
+                        id: products.length + 1,
+                        nome: values[0] || 'Produto Sem Nome',
+                        categoria: values[1] || 'Geral',
+                        preco: parseFloat(values[2]) || 0,
+                        estoque: parseInt(values[3]) || 0,
+                        marca: values[4] || '',
+                        descricao: values[5] || '',
+                        condicao: values[6] || 'novo',
+                        tags: values[7] || '',
+                        sku: values[8] || `SKU-${Date.now()}-${i}`
+                    };
+                    products.push(product);
+                }
+            }
+
+            return products;
+        }
+
+        function downloadTemplate() {
+            const template = `Nome,Categoria,Preço,Estoque,Marca,Descrição,Condição,Tags,SKU
+Processador Intel i9,Processadores,2899.99,15,Intel,Processador de alta performance,novo,processador,intel,INT-I9-13900K
+Placa de Vídeo RTX 4080,Placas de Vídeo,4599.99,8,NVIDIA,Placa de vídeo gaming,novo,gaming,nvidia,NVD-RTX-4080`;
+            
+            const blob = new Blob([template], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'template_importacao_produtos.csv';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportToPDF() {
+            showNotification('Exportação para PDF em desenvolvimento', 'info');
+        }
+
+        // Atualizar a função renderProducts para incluir checkboxes
+        function renderProducts() {
+            const filteredProducts = getFilteredProducts();
+            const sortedProducts = sortProducts(filteredProducts);
+            const startIndex = (currentPage - 1) * productsPerPage;
+            const endIndex = startIndex + productsPerPage;
+            const productsToShow = sortedProducts.slice(startIndex, endIndex);
+
+            const productsTableBody = document.getElementById('productsTableBody');
+            productsTableBody.innerHTML = '';
+
+            if (productsToShow.length === 0) {
+                productsTableBody.innerHTML = `
+                    <tr>
+                        <td colspan="9" class="text-center py-4">
+                            <i class="bi bi-box-seam display-4 text-muted"></i>
+                            <p class="mt-2 text-muted">Nenhum produto encontrado</p>
+                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                                <i class="bi bi-plus-circle"></i> Adicionar Primeiro Produto
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                productsToShow.forEach(product => {
+                    const row = document.createElement('tr');
+                    const firstLetter = product.nome ? product.nome.charAt(0).toUpperCase() : 'P';
+                    const stockClass = getStockClass(product.estoque);
+                    const isSelected = selectedProducts.has(product.id);
+
+                    row.innerHTML = `
+                        <td>
+                            <input type="checkbox" class="product-checkbox" value="${product.id}" 
+                                   ${isSelected ? 'checked' : ''} onchange="toggleProductSelection(${product.id})">
+                        </td>
+                        <td><span class="badge bg-secondary">#${product.id}</span></td>
+                        <td>
+                            <div class="d-flex align-items-center">
+                                <div class="product-image me-2">${firstLetter}</div>
+                                <div>
+                                    <div class="fw-semibold">${product.nome}</div>
+                                    <small class="text-muted">${product.marca || 'Sem marca'}</small>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="badge-category bg-primary">${product.categoria}</span>
+                        </td>
+                        <td class="price-tag">R$ ${parseFloat(product.preco).toFixed(2)}</td>
+                        <td>
+                            <span class="stock-badge ${stockClass}">${product.estoque} unidades</span>
+                        </td>
+                        <td>${product.marca || '-'}</td>
+                        <td>
+                            <span class="badge bg-success">Ativo</span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <button class="action-btn btn-view" onclick="viewProduct(${product.id})" title="Visualizar">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                <button class="action-btn btn-edit" onclick="editProduct(${product.id})" title="Editar">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="action-btn btn-delete" onclick="confirmDeleteProduct(${product.id})" title="Excluir">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    productsTableBody.appendChild(row);
+                });
+            }
+
+            updatePagination(filteredProducts.length);
+            updateCounters(filteredProducts.length, startIndex, endIndex);
+        }
+
+        // Restante do código mantido igual...
+        // (loadSettings, setTheme, showNotification, loadProducts, etc.)
+    </script>
+</body>
+</html>

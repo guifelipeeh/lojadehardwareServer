@@ -4,9 +4,9 @@ const userController = require('../controller/userController');
 
 
 
-userRoutes.post('/register',userController.registerUser)  
- 
-userRoutes.post('/logout',userController.logout)  
+
+
+userRoutes.post('/logout', userController.logout)
 
 
 
@@ -22,14 +22,20 @@ userRoutes.get('/', (req, res) => {
     `);
 });
 
-userRoutes.post('/login',userController.login)
+userRoutes.post('/login', userController.login)
 
 
 
-userRoutes.delete('/delete', (req, res) => {
 
 
-  return res.send({msg: "perfil deletado com sucesso"}).status(200);
-})
+userRoutes.put('/update', userController.updateUserController)
+userRoutes.get('/allUsers', userController.getallUsers)
+userRoutes.get('/seekByCpf/:cpf', userController.seekUserByCpf)
+userRoutes.get('/searchByFeatName/:name', userController.searchUserByFeatName)
+userRoutes.post('/register', userController.registerUser)
+userRoutes.delete('/delete', userController.deleteUser,(req, res) => {
+  res.status(200).json({ message: 'chegamos na rota de delete' });
+});
+
 
 module.exports = userRoutes;

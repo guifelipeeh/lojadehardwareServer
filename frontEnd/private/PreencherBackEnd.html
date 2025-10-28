@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Usuários</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            text-align: center;
+            max-width: 500px;
+            width: 100%;
+        }
+
+        .title {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 18px 40px;
+            font-size: 1.2rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            margin-bottom: 30px;
+            width: 100%;
+            max-width: 300px;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.6);
+        }
+
+        .generate-btn:active {
+            transform: translateY(-1px);
+        }
+
+        .generate-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result {
+            display: none;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+            margin-top: 20px;
+            text-align: left;
+            border-left: 5px solid #667eea;
+        }
+
+        .result-title {
+            color: #333;
+            font-size: 1.3rem;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .user-info {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .info-label {
+            font-weight: 600;
+            color: #555;
+        }
+
+        .info-value {
+            color: #333;
+            text-align: right;
+        }
+
+        .success-message {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 5px solid #28a745;
+        }
+
+        .error-message {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 15px;
+            border-left: 5px solid #dc3545;
+        }
+
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 15px;
+            border: 4px solid #667eea;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 30px 20px;
+            }
+            
+            .title {
+                font-size: 2rem;
+            }
+            
+            .generate-btn {
+                padding: 15px 30px;
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">Gerador de Usuários</h1>
+        <p class="subtitle">Clique no botão abaixo para gerar e cadastrar um usuário aleatório no banco de dados</p>
+        
+        <button class="generate-btn" onclick="inserirUser()" id="generateBtn">
+            🚀 Gerar e Cadastrar Usuário
+        </button>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p style="margin-top: 10px; color: #666;">Cadastrando usuário...</p>
+        </div>
+        
+        <div class="result" id="result">
+            <img class="user-avatar" id="userAvatar" src="" alt="Avatar do usuário">
+            <h3 class="result-title">Usuário Cadastrado com Sucesso!</h3>
+            <div class="user-info" id="userInfo">
+                <!-- As informações do usuário serão inseridas aqui via JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function gerarCPF() {
+            let cpf = Array.from({length: 9}, () => Math.floor(Math.random() * 10)).join('');
+            
+            let soma = 0;
+            for (let i = 0; i < 9; i++) {
+                soma += parseInt(cpf[i]) * (10 - i);
+            }
+            let resto = soma % 11;
+            let digito1 = resto < 2 ? 0 : 11 - resto;
+            cpf += digito1;
+            
+            soma = 0;
+            for (let i = 0; i < 10; i++) {
+                soma += parseInt(cpf[i]) * (11 - i);
+            }
+            resto = soma % 11;
+            let digito2 = resto < 2 ? 0 : 11 - resto;
+            cpf += digito2;
+            
+            return cpf;
+        }
+
+        function formatarCPF(cpf) {
+            return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+        }
+
+        async function inserirUser() {
+            const btn = document.getElementById('generateBtn');
+            const loading = document.getElementById('loading');
+            const result = document.getElementById('result');
+            
+            // Desabilita o botão e mostra loading
+            btn.disabled = true;
+            btn.innerHTML = '⏳ Gerando...';
+            loading.style.display = 'block';
+            result.style.display = 'none';
+
+            try {
+                const response = await fetch('https://randomuser.me/api/?results=1');
+                const data = await response.json();
+                
+                console.log('Dados da API:', data);
+                
+                const userData = data.results[0];
+                const name = `${userData.name.first} ${userData.name.last}`;
+                const email = userData.email;
+                const password = userData.login.password;
+                const endereco = `${userData.location.street.name}, ${userData.location.city}, ${userData.location.state}`;
+                const telefone = userData.phone;
+                const cpf = formatarCPF(gerarCPF());
+                const avatar = userData.picture.large;
+
+                // Envia os dados para o backend
+                await enviarUser(name, email, password, endereco, telefone, cpf, avatar);
+                
+            } catch (error) {
+                console.error('Erro ao gerar usuário:', error);
+                mostrarErro('Erro ao gerar usuário. Tente novamente.');
+            } finally {
+                // Reabilita o botão e esconde loading
+                btn.disabled = false;
+                btn.innerHTML = '🚀 Gerar e Cadastrar Usuário';
+                loading.style.display = 'none';
+            }
+        }
+
+        async function enviarUser(name, email, password, endereco, telefone, cpf, avatar) {
+            const user = {
+                name: name,
+                email: email,
+                password: password,
+                endereco: endereco,
+                role: "user",
+                telefone: telefone,
+                cpf: cpf
+            };
+
+            try {
+                const response = await fetch('http://localhost:3000/api/users/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(user)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    console.log('Sucesso:', data);
+                    mostrarResultado(user, avatar);
+                } else {
+                    throw new Error(data.message || 'Erro ao cadastrar usuário');
+                }
+            } catch (error) {
+                console.error('Erro:', error);
+                mostrarErro(error.message);
+            }
+        }
+
+        function mostrarResultado(user, avatar) {
+            const result = document.getElementById('result');
+            const userInfo = document.getElementById('userInfo');
+            const userAvatar = document.getElementById('userAvatar');
+
+            // Define o avatar
+            userAvatar.src = avatar;
+
+            // Preenche as informações do usuário
+            userInfo.innerHTML = `
+                <div class="info-item">
+                    <span class="info-label">Nome:</span>
+                    <span class="info-value">${user.name}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Email:</span>
+                    <span class="info-value">${user.email}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Senha:</span>
+                    <span class="info-value">${user.password}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Endereço:</span>
+                    <span class="info-value">${user.endereco}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">Telefone:</span>
+                    <span class="info-value">${user.telefone}</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">CPF:</span>
+                    <span class="info-value">${user.cpf}</span>
+                </div>
+            `;
+
+            result.style.display = 'block';
+            result.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function mostrarErro(mensagem) {
+            const result = document.getElementById('result');
+            const userInfo = document.getElementById('userInfo');
+            const userAvatar = document.getElementById('userAvatar');
+
+            userAvatar.src = '';
+            userInfo.innerHTML = `
+                <div class="error-message">
+                    <strong>Erro:</strong> ${mensagem}
+                </div>
+            `;
+
+            result.style.display = 'block';
+            result.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
