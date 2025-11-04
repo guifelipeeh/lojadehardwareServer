@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 
 // Criar diretório se não existir
-const uploadDir = path.join(__dirname, '../uploads');
+const uploadDir = path.join(__dirname, '../uploads/products');
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -22,6 +22,7 @@ const storage = multer.diskStorage({
         cb(null, filename);
     }
 });
+
 
 // Filtro para validar tipos de arquivo
 const fileFilter = (req, file, cb) => {

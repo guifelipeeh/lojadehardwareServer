@@ -1179,6 +1179,7 @@
                     const row = document.createElement('tr');
                     const firstLetter = user.name ? user.name.charAt(0).toUpperCase() : 'U';
                     
+                    console.log(user);
                     row.innerHTML = `
                         <td><span class="badge bg-secondary">#${user.id}</span></td>
                         <td>

@@ -175,9 +175,44 @@ const getallUsers = async (req, res) => {
   }
 };
 
+const uploadImage = async (req, res) => {
+
+  const token = req.headers.authorization?.split(' ')[1];
+  
+  if (!token) {
+    return res.status(400).json({ success: false, error: 'Token não fornecido' });
+  }
+  try {
+    // Verifica a sessão do usuário
+    const session = await Sessao.findOne({ where: { token, invalido: false } });
+    if (!session) {
+      return res.status(401).json({ success: false, error: 'Sessão inválida ou expirada' });
+    }
+    const userId = session.usuarioid;
+    const imagePath = req.file.filename; // Salva apenas o nome do arquivo
+
+    // Atualiza o caminho da imagem do usuário no banco de dados
+    const updatedUser = await userService.uploadImage(userId, imagePath);
+
+    if (!updatedUser) {
+      return res.status(404).json({ success: false, error: 'Usuário nao encontrado' });
+    }
+
+    return res.status(200).json({ success: true, message: 'Imagem atualizada com sucesso', user: updatedUser });
+
+
+  }catch (error) {
+    console.error("Erro ao fazer upload da imagem: Erro no controller", error);
+    return res.status(500).json({ success: false, error: 'Erro ao fazer upload da imagem' });
+  }
+};
+
+
+
 module.exports = {
+  uploadImage,
   createUser,
-  registerUser,
+  registerUser, 
   login,
   logout,
   deleteUser,

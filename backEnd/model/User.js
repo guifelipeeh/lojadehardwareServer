@@ -54,6 +54,24 @@ const User = sequelize.define('User', {
         defaultValue: 'user',
         allowNull: false,
 
+    },
+    userImage: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        get() {
+            const rawValue = this.getDataValue('userImage');
+            return rawValue ? `/uploads/users/${rawValue}` : null;
+        },
+        set(value) {
+            this.setDataValue('userImage', value);
+            if (value) {
+                this.setDataValue('userImage', value);
+            } else {
+                this.setDataValue('userImage', null);
+            }
+
+        }
+
     }
 },
     {

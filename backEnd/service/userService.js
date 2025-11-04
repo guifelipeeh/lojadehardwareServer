@@ -101,8 +101,34 @@ const searchUserByFeatName = async (name) => {
     });
     return users;
 };
+const uploadImage = async (userId, imagePath) => {
+    try {
+        const user = await User.findByPk(userId);
+        if (!user) {
+            throw new Error('Usuário não encontrado');
+        }
+        user.userImage = imagePath;
+        await user.save();
+        return user;
+    } catch (error) {
+        throw error;
+    }
+};
+const getImage = async (userId) => {
+    try {
+        const user = await User.findByPk(userId);
+        if (!user) {
+            throw new Error('Usuário nao encontrado');
+        }
+        return user.userImage;
+    } catch (error) {
+        throw error;
+    }
+};
 
 module.exports = { 
+    getImage,
+    uploadImage,
     createUser, 
     updateUser, 
     deleteUser, 
