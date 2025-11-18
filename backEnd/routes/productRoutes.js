@@ -1,36 +1,54 @@
 // routes/productRoutes.js
-const Routes = require('express').Router();
+const express = require('express');
+const multer = require('multer');
 const productController = require('../controller/productController');
-const { upload, handleMulterError } = require('../config/multer');
-const debugMulter = require('../middlewares/debugMiddlware');
+//const authMiddleware = require('../middlewares/authMiddleware');
 
+const router = express.Router();
 
-// Rota para adicionar produto COM upload de imagens
-Routes.post('/addProduct', 
-    
-    (req,res,next) => {
-        console.log('=== DEBUG ROUTE ===');
-        next();
+// Configuração do multer
+const storage = multer.memoryStorage(); // ou diskStorage para salvar em disco
+const upload = multer({
+    storage: storage,
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB
     },
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Apenas imagens são permitidas'), false);
+        }
+    }
+});
 
+// Aplicar middleware de autenticação em todas as rotas
+//router.use(authMiddleware);
+
+// Rotas
+router.post('/add', 
     upload.fields([
         { name: 'imagem_principal', maxCount: 1 },
-        { name: 'imagens_adicionais', maxCount: 5 }
+        { name: 'imagens_adicionais', maxCount: 10 }
     ]),
-
-    (req,res,next) => {
-        console.log('=== DEBUG ROUTE antes MULTER ===',req.files, req.body);
-        next();
-    },
-   
-
-    productController.addProduct
-   
+    productController.createProduct
 );
-Routes.get('/getAllProducts', productController.getAllProducts);
 
+router.get('/getall', productController.getAllProducts);
+router.get('/categories', productController.getCategories);
+router.get('/user', productController.getUserProducts);
+router.get('/statistics', productController.getProductStatistics);
+router.get('/:id', productController.getProductById);
 
+router.put('/:id',
+    upload.fields([
+        { name: 'imagem_principal', maxCount: 1 },
+        { name: 'imagens_adicionais', maxCount: 10 }
+    ]),
+    productController.updateProduct
+);
 
+router.delete('/:id', productController.deleteProduct);
+router.delete('/:id/images/:imageFilename', productController.removeProductImage);
 
-
-module.exports = Routes;
+module.exports = router;
