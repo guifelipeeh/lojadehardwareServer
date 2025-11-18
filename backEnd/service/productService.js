@@ -17,16 +17,16 @@ class ProductService {
             if (files) {
                 // Imagem principal
                 if (files.imagem_principal && files.imagem_principal[0]) {
-                    const mainImage = await this.processAndSaveImage(files.imagem_principal[0]);
+                    const mainImage = files.imagem_principal[0];
                     productInfo.imagem_filename = mainImage.filename;
-                    productInfo.imagem_url = mainImage.url;
+                    productInfo.imagem_url = this.formatImageUrl(mainImage.filename);
                 }
 
                 // Imagens adicionais
                 if (files.imagens_adicionais && files.imagens_adicionais.length > 0) {
-                    const additionalImages = await this.processMultipleImages(files.imagens_adicionais);
-                    productInfo.imagens_adicionais_filenames = additionalImages.map(img => img.filename);
-                    productInfo.imagens_adicionais = additionalImages.map(img => img.url);
+                    const additionalFilenames = files.imagens_adicionais.map(file => file.filename);
+                    productInfo.imagens_adicionais_filenames = additionalFilenames;
+                    productInfo.imagens_adicionais = this.formatImageUrls(additionalFilenames);
                 }
             }
 
@@ -51,97 +51,12 @@ class ProductService {
             
         } catch (error) {
             console.error('Erro no service ao criar produto:', error);
-            throw error;
-        }
-    }
-
-    async getAllProducts(filters = {}) {
-        try {
-            const {
-                categoria,
-                minPreco,
-                maxPreco,
-                estoqueMin,
-                estoqueMax,
-                ativo = true,
-                search,
-                page = 1,
-                limit = 10,
-                orderBy = 'data_criacao',
-                orderDirection = 'DESC' // CORREÇÃO: mudei o nome da variável
-            } = filters;
-
-            const where = { ativo };
-            const offset = (page - 1) * limit;
-
-            // Filtros
-            if (categoria) {
-                where.categoria = categoria;
+            
+            // Se houver erro, remover arquivos enviados
+            if (files) {
+                await this.rollbackFileUpload(files);
             }
-
-            if (minPreco || maxPreco) {
-                where.preco = {};
-                if (minPreco) where.preco[Op.gte] = parseFloat(minPreco);
-                if (maxPreco) where.preco[Op.lte] = parseFloat(maxPreco);
-            }
-
-            if (estoqueMin || estoqueMax) {
-                where.estoque = {};
-                if (estoqueMin) where.estoque[Op.gte] = parseInt(estoqueMin);
-                if (estoqueMax) where.estoque[Op.lte] = parseInt(estoqueMax);
-            }
-
-            // Busca por texto
-            if (search) {
-                where[Op.or] = [
-                    { nome: { [Op.like]: `%${search}%` } },
-                    { descricao: { [Op.like]: `%${search}%` } },
-                    { marca: { [Op.like]: `%${search}%` } },
-                    { sku: { [Op.like]: `%${search}%` } }
-                ];
-            }
-
-            // CORREÇÃO: removi a declaração duplicada da variável order
-            const orderArray = [];
-            if (orderBy && ['nome', 'preco', 'estoque', 'data_criacao', 'data_atualizacao'].includes(orderBy)) {
-                orderArray.push([orderBy, orderDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC']);
-            } else {
-                orderArray.push(['data_criacao', 'DESC']);
-            }
-
-            const { count, rows } = await Product.findAndCountAll({
-                where,
-                order: orderArray, // CORREÇÃO: usando orderArray
-                limit: parseInt(limit),
-                offset: parseInt(offset)
-            });
-
-            return {
-                products: rows,
-                pagination: {
-                    currentPage: parseInt(page),
-                    totalPages: Math.ceil(count / limit),
-                    totalProducts: count,
-                    hasNext: offset + rows.length < count,
-                    hasPrev: page > 1
-                }
-            };
-
-        } catch (error) {
-            console.error('Erro no service ao buscar produtos:', error);
-            throw error;
-        }
-    }
-
-    async getProductById(id) {
-        try {
-            const product = await Product.findByPk(id);
-            if (!product) {
-                throw new Error('Produto não encontrado');
-            }
-            return product;
-        } catch (error) {
-            console.error('Erro no service ao buscar produto:', error);
+            
             throw error;
         }
     }
@@ -159,25 +74,25 @@ class ProductService {
             }
 
             const updateData = { ...productData };
+            const filesToDelete = []; // Arquivos antigos para deletar
 
             // Processar upload de novas imagens
             if (files) {
                 // Imagem principal
                 if (files.imagem_principal && files.imagem_principal[0]) {
-                    // Remover imagem antiga se existir
+                    // Marcar imagem antiga para deleção
                     if (product.imagem_filename) {
-                        await this.deleteImageFile(product.imagem_filename);
+                        filesToDelete.push(product.imagem_filename);
                     }
 
-                    const mainImage = await this.processAndSaveImage(files.imagem_principal[0]);
+                    const mainImage = files.imagem_principal[0];
                     updateData.imagem_filename = mainImage.filename;
-                    updateData.imagem_url = mainImage.url;
+                    updateData.imagem_url = this.formatImageUrl(mainImage.filename);
                 }
 
                 // Imagens adicionais
                 if (files.imagens_adicionais && files.imagens_adicionais.length > 0) {
-                    const additionalImages = await this.processMultipleImages(files.imagens_adicionais);
-                    const newFilenames = additionalImages.map(img => img.filename);
+                    const newFilenames = files.imagens_adicionais.map(file => file.filename);
                     
                     // Manter imagens antigas e adicionar novas
                     const currentFilenames = product.imagens_adicionais_filenames || [];
@@ -203,10 +118,22 @@ class ProductService {
             }
 
             await product.update(updateData);
+
+            // Deletar arquivos antigos após atualização bem-sucedida
+            if (filesToDelete.length > 0) {
+                await this.deleteMultipleFiles(filesToDelete);
+            }
+
             return await this.getProductById(id);
 
         } catch (error) {
             console.error('Erro no service ao atualizar produto:', error);
+            
+            // Se houver erro, remover arquivos enviados
+            if (files) {
+                await this.rollbackFileUpload(files);
+            }
+            
             throw error;
         }
     }
@@ -235,71 +162,16 @@ class ProductService {
         }
     }
 
-    async getProductsByUser(userId, filters = {}) {
-        try {
-            const where = { user_id: userId, ...filters };
-            return await Product.findAll({ where });
-        } catch (error) {
-            console.error('Erro no service ao buscar produtos do usuário:', error);
-            throw error;
-        }
-    }
-
-    async getCategories() {
-        try {
-            const categories = await Product.findAll({
-                attributes: ['categoria'],
-                group: ['categoria'],
-                raw: true
-            });
-            return categories.map(cat => cat.categoria).filter(cat => cat);
-        } catch (error) {
-            console.error('Erro no service ao buscar categorias:', error);
-            throw error;
-        }
-    }
-
-    // Métodos auxiliares para imagens
-    async processAndSaveImage(file) {
-        const uploadDir = path.join(__dirname, '../uploads');
-        
-        // Criar diretório se não existir
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-
-        // Gerar nome único para o arquivo
-        const fileExtension = path.extname(file.originalname);
-        const fileName = `${Date.now()}-${Math.round(Math.random() * 1E9)}${fileExtension}`;
-        const filePath = path.join(uploadDir, fileName);
-
-        // Salvar arquivo
-        if (file.buffer) {
-            await fs.promises.writeFile(filePath, file.buffer);
-        } else {
-            // Se for disk storage
-            await fs.promises.rename(file.path, filePath);
-        }
-
-        return {
-            filename: fileName,
-            url: this.formatImageUrl(fileName)
-        };
-    }
-
-    async processMultipleImages(files) {
-        const processedImages = [];
-        for (const file of files) {
-            const image = await this.processAndSaveImage(file);
-            processedImages.push(image);
-        }
-        return processedImages;
-    }
-
+    // Métodos auxiliares para arquivos
     formatImageUrl(filename) {
         if (!filename) return null;
         const baseUrl = process.env.APP_URL || 'http://localhost:3000';
         return `${baseUrl}/uploads/${filename}`;
+    }
+
+    formatImageUrls(filenames) {
+        if (!filenames || !Array.isArray(filenames)) return [];
+        return filenames.map(filename => this.formatImageUrl(filename));
     }
 
     async deleteImageFile(filename) {
@@ -307,31 +179,65 @@ class ProductService {
             const filePath = path.join(__dirname, '../uploads', filename);
             if (fs.existsSync(filePath)) {
                 await fs.promises.unlink(filePath);
+                console.log(`Arquivo deletado: ${filename}`);
             }
         } catch (error) {
             console.error('Erro ao deletar arquivo de imagem:', error);
         }
     }
 
+    async deleteMultipleFiles(filenames) {
+        try {
+            for (const filename of filenames) {
+                await this.deleteImageFile(filename);
+            }
+        } catch (error) {
+            console.error('Erro ao deletar múltiplos arquivos:', error);
+        }
+    }
+
     async deleteProductImages(product) {
         try {
-            // Deletar imagem principal
+            const filesToDelete = [];
+
+            // Imagem principal
             if (product.imagem_filename) {
-                await this.deleteImageFile(product.imagem_filename);
+                filesToDelete.push(product.imagem_filename);
             }
 
-            // Deletar imagens adicionais
+            // Imagens adicionais
             if (product.imagens_adicionais_filenames && Array.isArray(product.imagens_adicionais_filenames)) {
-                for (const filename of product.imagens_adicionais_filenames) {
-                    await this.deleteImageFile(filename);
-                }
+                filesToDelete.push(...product.imagens_adicionais_filenames);
             }
+
+            await this.deleteMultipleFiles(filesToDelete);
+
         } catch (error) {
             console.error('Erro ao deletar imagens do produto:', error);
         }
     }
 
-    // Método para remover imagem específica
+    async rollbackFileUpload(files) {
+        try {
+            const filesToDelete = [];
+
+            if (files.imagem_principal && files.imagem_principal[0]) {
+                filesToDelete.push(files.imagem_principal[0].filename);
+            }
+
+            if (files.imagens_adicionais && files.imagens_adicionais.length > 0) {
+                files.imagens_adicionais.forEach(file => {
+                    filesToDelete.push(file.filename);
+                });
+            }
+
+            await this.deleteMultipleFiles(filesToDelete);
+
+        } catch (error) {
+            console.error('Erro no rollback de upload:', error);
+        }
+    }
+
     async removeProductImage(productId, imageFilename, userId) {
         try {
             const product = await Product.findByPk(productId);
@@ -377,10 +283,203 @@ class ProductService {
         }
     }
 
-    formatImageUrls(filenames) {
-        if (!filenames || !Array.isArray(filenames)) return [];
-        return filenames.map(filename => this.formatImageUrl(filename));
+   async getAllProducts(filters = {}) {
+    try {
+        // CORREÇÃO: Garantir que filters sempre seja um objeto
+        const safeFilters = filters || {};
+        
+        // CORREÇÃO: Usar valores padrão para todas as propriedades
+        const {
+            categoria,
+            minPreco,
+            maxPreco,
+            estoqueMin,
+            estoqueMax,
+            ativo = true,
+            search,
+            page = 1,
+            limit = 10,
+            orderBy = 'data_criacao',
+            orderDirection = 'DESC',
+            marca,
+            condicao,
+            tags,
+            user_id,
+            sku,
+            withUser = false
+        } = safeFilters;
+
+        const where = { ativo };
+        const offset = (page - 1) * limit;
+
+        // Filtro por usuário
+        if (user_id) {
+            where.user_id = parseInt(user_id);
+        }
+
+        // Filtro por categoria
+        if (categoria) {
+            where.categoria = {
+                [Op.like]: `%${categoria}%`
+            };
+        }
+
+        // Filtro por marca
+        if (marca) {
+            where.marca = {
+                [Op.like]: `%${marca}%`
+            };
+        }
+
+        // Filtro por SKU
+        if (sku) {
+            where.sku = {
+                [Op.like]: `%${sku}%`
+            };
+        }
+
+        // Filtro por condição
+        if (condicao && ['novo', 'usado', 'recondicionado'].includes(condicao)) {
+            where.condicao = condicao;
+        }
+
+        // Filtro por preço
+        if (minPreco !== undefined && maxPreco !== undefined) {
+            where.preco = {
+                [Op.between]: [parseFloat(minPreco), parseFloat(maxPreco)]
+            };
+        } else if (minPreco !== undefined) {
+            where.preco = {
+                [Op.gte]: parseFloat(minPreco)
+            };
+        } else if (maxPreco !== undefined) {
+            where.preco = {
+                [Op.lte]: parseFloat(maxPreco)
+            };
+        }
+
+        // Filtro por estoque
+        if (estoqueMin !== undefined && estoqueMax !== undefined) {
+            where.estoque = {
+                [Op.between]: [parseInt(estoqueMin), parseInt(estoqueMax)]
+            };
+        } else if (estoqueMin !== undefined) {
+            where.estoque = {
+                [Op.gte]: parseInt(estoqueMin)
+            };
+        } else if (estoqueMax !== undefined) {
+            where.estoque = {
+                [Op.lte]: parseInt(estoqueMax)
+            };
+        }
+
+        // Filtro por tags
+        if (tags) {
+            const tagsArray = Array.isArray(tags) ? tags : tags.split(',').map(tag => tag.trim());
+            where.tags = {
+                [Op.overlap]: tagsArray
+            };
+        }
+
+        // Busca por texto
+        if (search) {
+            const searchPattern = { [Op.like]: `%${search}%` };
+            where[Op.or] = [
+                { nome: searchPattern },
+                { descricao: searchPattern },
+                { marca: searchPattern },
+                { sku: searchPattern },
+                { categoria: searchPattern }
+            ];
+        }
+
+        // Configurar ordenação
+        const orderArray = [];
+        const validOrderFields = ['nome', 'preco', 'estoque', 'data_criacao', 'data_atualizacao', 'marca'];
+        
+        if (orderBy && validOrderFields.includes(orderBy)) {
+            orderArray.push([orderBy, orderDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC']);
+        } else {
+            orderArray.push(['data_criacao', 'DESC']);
+        }
+        orderArray.push(['id', 'ASC']);
+
+        // Buscar produtos
+        const { count, rows } = await Product.findAndCountAll({
+            where,
+            order: orderArray,
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            attributes: {
+                exclude: ['user_id']
+            }
+        });
+
+        // CORREÇÃO: Verificar se rows existe antes de mapear
+        const processedProducts = rows ? rows.map(product => {
+            const productData = product.toJSON ? product.toJSON() : product;
+            
+            // Garantir URLs de imagem
+            if (productData.imagem_url && !productData.imagem_url.startsWith('http')) {
+                productData.imagem_url = this.formatImageUrl(productData.imagem_url);
+            }
+
+            if (productData.imagens_adicionais && Array.isArray(productData.imagens_adicionais)) {
+                productData.imagens_adicionais = productData.imagens_adicionais.map(img => 
+                    img && !img.startsWith('http') ? this.formatImageUrl(img) : img
+                );
+            }
+
+            // Adicionar status de estoque
+            productData.status_estoque = this.getStockStatus(productData.estoque);
+
+            return productData;
+        }) : [];
+
+        return {
+            products: processedProducts,
+            pagination: {
+                currentPage: parseInt(page),
+                totalPages: Math.ceil(count / limit),
+                totalProducts: count,
+                hasNext: offset + parseInt(limit) < count,
+                hasPrev: page > 1,
+                pageSize: parseInt(limit)
+            }
+        };
+
+    } catch (error) {
+        console.error('Erro no service ao buscar produtos:', error);
+        
+        if (error.name === 'SequelizeDatabaseError') {
+            throw new Error('Erro na consulta do banco de dados. Verifique os parâmetros de filtro.');
+        }
+        
+        throw new Error(`Erro ao buscar produtos: ${error.message}`);
     }
+}
+
+// Método auxiliar para status do estoque
+getStockStatus(stock) {
+    if (stock === 0) {
+        return 'esgotado';
+    } else if (stock <= 5) {
+        return 'baixo';
+    } else if (stock <= 20) {
+        return 'medio';
+    } else {
+        return 'alto';
+    }
+}
+
+// Método para formatar URL da imagem
+formatImageUrl(filename) {
+    if (!filename) return null;
+    const baseUrl = process.env.APP_URL || 'http://localhost:3000';
+    return `${baseUrl}/uploads/${filename}`;
+}
+   
+
 }
 
 module.exports = new ProductService();
