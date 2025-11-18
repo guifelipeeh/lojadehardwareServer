@@ -169,6 +169,7 @@ const searchUserByFeatName = async (req, res) => {
 const getallUsers = async (req, res) => {
   try {
     const users = await userService.getallUsers();
+    
     res.status(200).json(users);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -206,6 +207,7 @@ const uploadImage = async (req, res) => {
     return res.status(500).json({ success: false, error: 'Erro ao fazer upload da imagem' });
   }
 };
+
 
 
 

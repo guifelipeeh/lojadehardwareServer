@@ -27,6 +27,8 @@ Routes.post('/addProduct',
     productController.addProduct
    
 );
+Routes.get('/getAllProducts', productController.getAllProducts);
+
 
 
 

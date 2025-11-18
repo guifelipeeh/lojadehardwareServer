@@ -742,7 +742,7 @@
                         <button class="btn btn-outline-secondary me-2" onclick="toggleSettings()" title="Configurações">
                             <i class="bi bi-sliders"></i>
                         </button>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                        <button class="btn btn-primary" onclick="PageProduct()">
                             <i class="bi bi-plus-circle"></i> Adicionar Produto
                         </button>
                     </div>
@@ -754,12 +754,6 @@
                         <button class="nav-link active" id="list-tab" data-bs-toggle="tab" data-bs-target="#list"
                             type="button" role="tab">
                             <i class="bi bi-list-ul"></i> Lista de Produtos
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="add-tab" data-bs-toggle="tab" data-bs-target="#add" type="button"
-                            role="tab">
-                            <i class="bi bi-plus-square"></i> Cadastro Rápido
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
@@ -923,121 +917,6 @@
                         </div>
                     </div>
 
-                    <!-- Aba: Cadastro Rápido -->
-                    <div class="tab-pane fade" id="add" role="tabpanel">
-                        <div class="table-container">
-                            <h5 class="mb-4"><i class="bi bi-plus-square"></i> Cadastro Rápido de Produto</h5>
-
-                            <form id="quickProductForm" enctype="multipart/form-data">
-                                <div id="quickMessage" class="alert" style="display: none;"></div>
-
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="quickNome" class="form-label required">Nome do Produto</label>
-                                            <input type="text" class="form-control" id="quickNome" name="nome" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="quickCategoria" class="form-label required">Categoria</label>
-                                            <select class="form-select" id="quickCategoria" name="categoria" required>
-                                                <option value="">Selecione uma categoria</option>
-                                                <option value="Processadores">Processadores</option>
-                                                <option value="Placas de Vídeo">Placas de Vídeo</option>
-                                                <option value="Memória RAM">Memória RAM</option>
-                                                <option value="Armazenamento">Armazenamento</option>
-                                                <option value="Placas-mãe">Placas-mãe</option>
-                                                <option value="Fontes">Fontes</option>
-                                                <option value="Gabinetes">Gabinetes</option>
-                                                <option value="Coolers">Coolers</option>
-                                                <option value="Periféricos">Periféricos</option>
-                                                <option value="Monitores">Monitores</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label for="quickPreco" class="form-label required">Preço (R$)</label>
-                                            <input type="number" class="form-control" id="quickPreco" name="preco"
-                                                step="0.01" min="0.01" required>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label for="quickEstoque" class="form-label required">Estoque</label>
-                                            <input type="number" class="form-control" id="quickEstoque" name="estoque"
-                                                min="0" required value="0">
-                                        </div>
-                                    </div>
-                                    <div class="col-md-4">
-                                        <div class="mb-3">
-                                            <label for="quickMarca" class="form-label">Marca</label>
-                                            <input type="text" class="form-control" id="quickMarca" name="marca">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label for="quickDescricao" class="form-label">Descrição</label>
-                                    <textarea class="form-control form-textarea" id="quickDescricao" name="descricao"
-                                        rows="3"></textarea>
-                                </div>
-
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="quickCondicao" class="form-label">Condição</label>
-                                            <select class="form-select" id="quickCondicao" name="condicao">
-                                                <option value="novo">Novo</option>
-                                                <option value="usado">Usado</option>
-                                                <option value="recondicionado">Recondicionado</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <div class="mb-3">
-                                            <label for="quickTags" class="form-label">Tags</label>
-                                            <input type="text" class="form-control" id="quickTags" name="tags"
-                                                placeholder="Separadas por vírgula">
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="mb-3">
-                                    <label class="form-label required">Imagem Principal</label>
-                                    <div class="file-upload" id="quickMainImageUpload">
-                                        <div class="upload-icon">📷</div>
-                                        <p>Clique para selecionar ou arraste a imagem principal</p>
-                                        <input type="file" id="quickImagemPrincipal" name="imagem_principal"
-                                            class="file-input" accept="image/*">
-                                    </div>
-                                    <div class="file-list" id="quickMainImageList"></div>
-                                </div>
-
-                                <div class="mb-4">
-                                    <label class="form-label">Imagens Adicionais</label>
-                                    <div class="file-upload" id="quickAdditionalImagesUpload">
-                                        <div class="upload-icon">🖼️</div>
-                                        <p>Clique para selecionar ou arraste imagens adicionais</p>
-                                        <input type="file" id="quickImagensAdicionais" name="imagens_adicionais"
-                                            class="file-input" accept="image/*" multiple>
-                                    </div>
-                                    <div class="file-list" id="quickAdditionalImagesList"></div>
-                                </div>
-
-                                <div class="d-grid">
-                                    <button type="submit" class="btn btn-primary btn-lg">
-                                        <i class="bi bi-check-circle"></i> Cadastrar Produto
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-
                     <!-- Aba: Ações em Lote -->
                     <div class="tab-pane fade" id="batch" role="tabpanel">
                         <div class="table-container">
@@ -1104,113 +983,14 @@
         </div>
     </div>
 
-    <!-- Add Product Modal -->
-    <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="addProductModalLabel">
-                        <i class="bi bi-plus-circle"></i> Adicionar Novo Produto
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <form id="addProductForm">
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="productName" class="form-label required">Nome do Produto</label>
-                                    <input type="text" class="form-control" id="productName" required>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="productCategory" class="form-label required">Categoria</label>
-                                    <select class="form-select" id="productCategory" required>
-                                        <option value="">Selecione uma categoria</option>
-                                        <option value="Processadores">Processadores</option>
-                                        <option value="Placas de Vídeo">Placas de Vídeo</option>
-                                        <option value="Memória RAM">Memória RAM</option>
-                                        <option value="Armazenamento">Armazenamento</option>
-                                        <option value="Placas-mãe">Placas-mãe</option>
-                                        <option value="Fontes">Fontes</option>
-                                        <option value="Gabinetes">Gabinetes</option>
-                                        <option value="Coolers">Coolers</option>
-                                        <option value="Periféricos">Periféricos</option>
-                                        <option value="Monitores">Monitores</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="productPrice" class="form-label required">Preço (R$)</label>
-                                    <input type="number" class="form-control" id="productPrice" step="0.01" min="0.01" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="productDimension" class="form-label required">Dimensão (cm)</label>
-                                    <input type="text" class="form-control" id="dimensao" step="0.01" min="0.01" required>
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="productPeso" class="form-label required">Peso (kg)</label>
-                                    <input type="number" class="form-control" id="productPeso" step="0.01" min="0.01" required>
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="productStock" class="form-label required">Estoque</label>
-                                    <input type="number" class="form-control" id="productStock" min="0" required value="0">
-                                </div>
-                            </div>
-                            <div class="col-md-4">
-                                <div class="mb-3">
-                                    <label for="productBrand" class="form-label">Marca</label>
-                                    <input type="text" class="form-control" id="productBrand">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="productImage" class="form-label">Imagem</label>
-                            <input type="file" class="form-control" id="productImage">
-
-                        </div>
-                        <div class="mb-3">
-                            <label>Adicione mais imagens (máximo de 5)</label><br></label>
-                            <input type="file" class="form-control" id="productAdditionalImages" multiple>
-                        </div>
-                        <div class="mb-3">
-                            <label>Tags</label>
-                            <input type="text" class="form-control" id="productTags" placeholder="Separadas por vírgula">
-                        </div>
-                        <div class="mb-3">
-                            <label>SKU</label>
-                            <input type="text" class="form-control" id="productSKU">
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="productDescription" class="form-label">Descrição</label>
-                            <textarea class="form-control" id="productDescription" rows="3"></textarea>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="button" class="btn btn-primary" onclick="addNewProduct()">Adicionar Produto</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Bootstrap & Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        function PageProduct() {
+            window.location.href = "uploadProduct.html";
+        }
+
         // Configurações globais
         let products = [];
         let currentPage = 1;
@@ -1230,15 +1010,6 @@
         });
 
         function setupFormHandlers() {
-            // Formulário de cadastro rápido
-            const quickForm = document.getElementById('quickProductForm');
-            if (quickForm) {
-                quickForm.addEventListener('submit', function(e) {
-                    e.preventDefault();
-                    addQuickProduct();
-                });
-            }
-
             // Formulário de busca
             const searchInput = document.getElementById('searchInput');
             if (searchInput) {
@@ -1391,19 +1162,32 @@
             overlay.style.display = show ? 'flex' : 'none';
         }
 
-        function loadProducts() {
-            // Dados de exemplo
-            products = [
-                { id: 1, nome: 'Processador Intel i7', categoria: 'Processadores', preco: 1200.00, estoque: 15, marca: 'Intel', descricao: 'Processador de alta performance.' },
-                { id: 2, nome: 'Placa de Vídeo NVIDIA RTX 3080', categoria: 'Placas de Vídeo', preco: 4500.00, estoque: 5, marca: 'NVIDIA', descricao: 'Placa de vídeo para jogos e renderização.' },
-                { id: 3, nome: 'Memória RAM 16GB DDR4', categoria: 'Memória RAM', preco: 350.00, estoque: 30, marca: 'Corsair', descricao: 'Memória rápida para multitarefas.' },
-                // Adicione mais produtos conforme necessário
-            ];
-
-
-
-            renderProducts();
-            updateStatistics();
+        async function loadProducts() {
+            try {
+                showLoading(true);
+                
+                const response = await fetch('http://localhost:3000/api/products/getAllProducts');
+                
+                if (!response.ok) {
+                    throw new Error(`Erro HTTP: ${response.status}`);
+                }
+                
+                const productsData = await response.json();
+                
+                // Atualizar o array global de produtos com os dados da API
+                products = productsData;
+                
+                console.log('Produtos carregados:', products);
+                
+                renderProducts();
+                updateStatistics();
+                
+            } catch (error) {
+                console.error('Erro ao carregar produtos:', error);
+                showNotification('Erro ao carregar produtos: ' + error.message, 'error');
+            } finally {
+                showLoading(false);
+            }
         }
 
         function getFilteredProducts() {
@@ -1416,11 +1200,11 @@
             return products.filter(product => {
                 const matchesSearch = !searchTerm || 
                     product.nome.toLowerCase().includes(searchTerm) ||
-                    product.descricao.toLowerCase().includes(searchTerm) ||
-                    product.marca.toLowerCase().includes(searchTerm);
+                    (product.descricao && product.descricao.toLowerCase().includes(searchTerm)) ||
+                    (product.marca && product.marca.toLowerCase().includes(searchTerm));
                 
                 const matchesCategory = !categoryFilter || product.categoria === categoryFilter;
-                const matchesPrice = product.preco >= priceMin && product.preco <= priceMax;
+                const matchesPrice = parseFloat(product.preco) >= priceMin && parseFloat(product.preco) <= priceMax;
                 
                 let matchesStock = true;
                 if (stockFilter) {
@@ -1441,11 +1225,11 @@
                 switch(currentSort) {
                     case 'name': return a.nome.localeCompare(b.nome);
                     case 'name_desc': return b.nome.localeCompare(a.nome);
-                    case 'price_high': return b.preco - a.preco;
-                    case 'price_low': return a.preco - b.preco;
+                    case 'price_high': return parseFloat(b.preco) - parseFloat(a.preco);
+                    case 'price_low': return parseFloat(a.preco) - parseFloat(b.preco);
                     case 'stock_high': return b.estoque - a.estoque;
                     case 'stock_low': return a.estoque - b.estoque;
-                    case 'recent': return b.id - a.id;
+                    case 'recent': return new Date(b.data_criacao) - new Date(a.data_criacao);
                     default: return a.id - b.id;
                 }
             });
@@ -1474,7 +1258,7 @@
                         <td colspan="9" class="text-center py-4">
                             <i class="bi bi-box-seam display-4 text-muted"></i>
                             <p class="mt-2 text-muted">Nenhum produto encontrado</p>
-                            <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                            <button class="btn btn-primary btn-sm" onclick="PageProduct()">
                                 <i class="bi bi-plus-circle"></i> Adicionar Primeiro Produto
                             </button>
                         </td>
@@ -1482,7 +1266,6 @@
                 `;
             } else {
                 productsToShow.forEach(product => {
-                    const row = document.createElement('tr');
                     const firstLetter = product.nome ? product.nome.charAt(0).toUpperCase() : 'P';
                     const stockClass = getStockClass(product.estoque);
                     const isSelected = selectedProducts.has(product.id);
@@ -1511,7 +1294,9 @@
                         </td>
                         <td>${product.marca || '-'}</td>
                         <td>
-                            <span class="badge bg-success">Ativo</span>
+                            <span class="badge ${product.ativo ? 'bg-success' : 'bg-secondary'}">
+                                ${product.ativo ? 'Ativo' : 'Inativo'}
+                            </span>
                         </td>
                         <td>
                             <div class="btn-group btn-group-sm">
@@ -1580,9 +1365,9 @@
 
         function updateStatistics() {
             const total = products.length;
-            const active = products.filter(p => p.estoque > 0).length;
+            const active = products.filter(p => p.ativo).length;
             const lowStock = products.filter(p => p.estoque <= 5 && p.estoque > 0).length;
-            const totalValue = products.reduce((sum, p) => sum + (p.preco * p.estoque), 0);
+            const totalValue = products.reduce((sum, p) => sum + (parseFloat(p.preco) * p.estoque), 0);
 
             document.getElementById('totalProducts').textContent = total;
             document.getElementById('activeProducts').textContent = active;
@@ -1620,147 +1405,6 @@
             // Você pode adicionar um badge em algum lugar para mostrar a contagem
         }
 
-       async function addNewProduct() {
-    const name = document.getElementById('productName').value;
-    const category = document.getElementById('productCategory').value;
-    const price = parseFloat(document.getElementById('productPrice').value);
-    const stock = parseInt(document.getElementById('productStock').value);
-    const brand = document.getElementById('productBrand').value;
-    const description = document.getElementById('productDescription').value;
-    const tags = document.getElementById('productTags').value;
-    const sku = document.getElementById('productSKU').value;
-    const imageInput = document.getElementById('productImage');
-    const additionalImagesInput = document.getElementById('productAdditionalImages');
-    const dimension = document.getElementById('dimensao').value;
-    const peso = document.getElementById('productPeso').value;
-
-    if (!name || !category || isNaN(price) || isNaN(stock)) {
-        showNotification('Preencha todos os campos obrigatórios', 'warning');
-        return;
-    }
-
-    // Verificar se há pelo menos uma imagem principal
-    if (imageInput.files.length === 0) {
-        showNotification('Adicione pelo menos uma imagem principal', 'warning');
-        return;
-    }
-
-    const token = 1; // Substitua pelo token real
-
-    try {
-        // Criar FormData para enviar arquivos e dados
-        const formData = new FormData();
-        
-        // Adicionar dados do produto
-       
-        formData.append('userId', userId);
-        formData.append('nome', name);
-        formData.append('categoria', category);
-        formData.append('preco', price);
-        formData.append('estoque', stock);
-        formData.append('marca', brand);
-        formData.append('descricao', description);
-        formData.append('tags', tags);
-        formData.append('sku', sku);
-        formData.append('dimensao', dimension);
-        formData.append('peso', peso);
-
-        // Adicionar imagem principal
-        formData.append('imagem_principal', imageInput.files[0]);
-
-        // Adicionar imagens adicionais
-        if (additionalImagesInput.files.length > 0) {
-            for (let i = 0; i < additionalImagesInput.files.length; i++) {
-                formData.append('imagens_adicionais', additionalImagesInput.files[i]);
-            }
-        }
-
-        // Enviar requisição
-        const response = await fetch('http://localhost:3000/api/products/addProduct', {
-            method: 'POST',
-            body: formData, // Usar FormData em vez de JSON
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                // Não definir Content-Type - o browser vai definir automaticamente com boundary
-            }
-        });
-
-        if (!response.ok) {
-            const errorData = await response.json();
-            throw new Error(errorData.message || 'Erro ao adicionar produto');
-        }
-
-        const data = await response.json();
-
-        // Fechar modal
-        const modal = bootstrap.Modal.getInstance(document.getElementById('addProductModal'));
-        modal.hide();
-        
-        // Resetar formulário
-        document.getElementById('addProductForm').reset();
-        
-        // Atualizar interface
-        renderProducts();
-        showNotification('Produto adicionado com sucesso!', 'success');
-
-    } catch (error) {
-        console.error('Erro ao adicionar produto:', error);
-        showNotification(error.message || 'Erro ao adicionar produto', 'error');
-    }
-}
-        function addQuickProduct() {
-            const form = document.getElementById('quickProductForm');
-            const formData = new FormData(form);
-            
-            const nome = formData.get('nome');
-            const categoria = formData.get('categoria');
-            const preco = parseFloat(formData.get('preco'));
-            const estoque = parseInt(formData.get('estoque'));
-            const marca = formData.get('marca');
-            const descricao = formData.get('descricao');
-            const condicao = formData.get('condicao');
-            const tags = formData.get('tags');
-
-            if (!nome || !categoria || !preco || estoque < 0) {
-                showNotification('Preencha todos os campos obrigatórios', 'warning');
-                return;
-            }
-
-            const newProduct = {
-                id: Math.max(...products.map(p => p.id)) + 1,
-                nome: nome,
-                categoria: categoria,
-                preco: preco,
-                estoque: estoque,
-                marca: marca,
-                descricao: descricao,
-                condicao: condicao || "novo",
-                tags: tags || "",
-                sku: `SKU-${Date.now()}`
-            };
-
-            products.push(newProduct);
-            
-            // Resetar formulário
-            form.reset();
-            document.getElementById('quickMainImageList').innerHTML = '';
-            document.getElementById('quickAdditionalImagesList').innerHTML = '';
-            
-            // Mostrar mensagem de sucesso
-            const messageDiv = document.getElementById('quickMessage');
-            messageDiv.className = 'alert alert-success';
-            messageDiv.textContent = 'Produto cadastrado com sucesso!';
-            messageDiv.style.display = 'block';
-            
-            // Atualizar interface
-            renderProducts();
-            
-            // Ocultar mensagem após 3 segundos
-            setTimeout(() => {
-                messageDiv.style.display = 'none';
-            }, 3000);
-        }
-
         function viewProduct(id) {
             showNotification(`Visualizar produto #${id} - Funcionalidade em desenvolvimento`, 'info');
         }
@@ -1771,10 +1415,8 @@
 
         function confirmDeleteProduct(id) {
             if (confirm('Tem certeza que deseja excluir este produto?')) {
-                products = products.filter(p => p.id !== id);
-                selectedProducts.delete(id);
-                renderProducts();
-                showNotification('Produto excluído com sucesso!', 'success');
+                // Aqui você faria a chamada para a API para deletar o produto
+                showNotification(`Excluir produto #${id} - Funcionalidade em desenvolvimento`, 'info');
             }
         }
 
@@ -1840,33 +1482,21 @@
 
         function deleteProductsBatch(productIds) {
             if (confirm(`Tem certeza que deseja excluir ${productIds.length} produtos?`)) {
-                products = products.filter(p => !productIds.includes(p.id));
-                selectedProducts.clear();
-                renderProducts();
-                updateStatistics();
-                showNotification(`${productIds.length} produtos excluídos com sucesso`, 'success');
+                // Aqui você faria a chamada para a API para deletar os produtos
+                showNotification(`Excluir ${productIds.length} produtos - Funcionalidade em desenvolvimento`, 'info');
             }
         }
 
         function setupFileUploads() {
             const uploadConfigs = [
-                { container: 'quickMainImageUpload', input: 'quickImagemPrincipal', list: 'quickMainImageList' },
-                { container: 'quickAdditionalImagesUpload', input: 'quickImagensAdicionais', list: 'quickAdditionalImagesList' },
                 { container: 'importUpload', input: 'importFile', list: null }
             ];
 
             uploadConfigs.forEach(config => {
                 const container = document.getElementById(config.container);
                 const input = document.getElementById(config.input);
-                const list = config.list ? document.getElementById(config.list) : null;
 
                 if (container && input) {
-                    input.addEventListener('change', function(e) {
-                        if (list) {
-                            updateFileList(input, list);
-                        }
-                    });
-
                     // Drag and drop
                     ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
                         container.addEventListener(eventName, preventDefaults, false);
@@ -1889,33 +1519,9 @@
                         const dt = e.dataTransfer;
                         const files = dt.files;
                         input.files = files;
-                        if (list) {
-                            updateFileList(input, list);
-                        }
                     });
                 }
             });
-        }
-
-        function updateFileList(input, list) {
-            list.innerHTML = '';
-            for (let i = 0; i < input.files.length; i++) {
-                const file = input.files[i];
-                const fileItem = document.createElement('div');
-                fileItem.className = 'file-item';
-                fileItem.innerHTML = `
-                    <span>${file.name}</span>
-                    <span class="remove-file" onclick="removeFile(this, ${i})">×</span>
-                `;
-                list.appendChild(fileItem);
-            }
-        }
-
-        function removeFile(element, index) {
-            const fileItem = element.parentElement;
-            fileItem.remove();
-            // Aqui você precisaria atualizar o input files também
-
         }
 
         function importProducts() {

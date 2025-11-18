@@ -1,8 +1,18 @@
 const express = require('express');
 const userRoutes = express.Router();
 const userController = require('../controller/userController');
+const upload = require('../config/userMulter');
 
 
+
+
+userRoutes.post('/uploadImage', upload.single('userImage'), (req, res) => {
+    if (!req.file) {
+        return res.status(400).json({ success: false, error: 'Nenhum arquivo foi enviado.' });
+    }
+    userController.uploadImage(req, res);
+    res.status(200).json({ success: true, message: 'Arquivo enviado com sucesso.' });
+});
 
 
 
@@ -36,6 +46,7 @@ userRoutes.post('/register', userController.registerUser)
 userRoutes.delete('/delete', userController.deleteUser,(req, res) => {
   res.status(200).json({ message: 'chegamos na rota de delete' });
 });
+
 
 
 module.exports = userRoutes;

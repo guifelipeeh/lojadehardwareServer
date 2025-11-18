@@ -16,6 +16,7 @@ async function addProduct(req, res) {
     try {
         const productData = req.body;
         const product = await productService.createProduct(productData);
+        product.id = 15;
         await uploadService.handleProductImageUpload(product.id, req.files);
         res.status(201).json(product);
     } catch (error) {
@@ -23,6 +24,15 @@ async function addProduct(req, res) {
         res.status(500).json({ error: 'Erro ao adicionar produto' });
     }
 }
+async function getAllProducts(req, res) {
+    try{
+        const products = await productService.getAllProducts();
+        res.status(200).json(products);
+    } catch (error) {
+        console.error('Erro ao buscar produtos:', error);
+        res.status(500).json({ error: 'Erro ao buscar produtos' });
+    }
+}
 
 
-module.exports = { addProduct };
+module.exports = { addProduct, getAllProducts };

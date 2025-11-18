@@ -69,6 +69,7 @@ const User = sequelize.define('User', {
             } else {
                 this.setDataValue('userImage', null);
             }
+            
 
         }
 

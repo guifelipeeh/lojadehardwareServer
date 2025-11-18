@@ -8,6 +8,9 @@ class ProductService {
         
         return await product.create(cleanData);
     }
+    async getAllProducts() {
+        return await product.findAll();
+    }
 
 }
 
