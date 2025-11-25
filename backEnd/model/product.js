@@ -89,24 +89,37 @@ const Product = sequelize.define('Product', {
     imagem_url: {
         type: DataTypes.STRING,
         allowNull: true,
-        get() {
-            const rawValue = this.getDataValue('imagem_url');
-            return this.formatImageUrl(rawValue);
-        },
-        set(value) {
-            this.setDataValue('imagem_url', this.cleanImageUrl(value));
+        validate: {
+            isUrl: {
+                msg: 'A URL da imagem principal deve ser uma URL válida'
+            }
         }
     },
     imagens_adicionais: {
         type: DataTypes.JSON,
         allowNull: true,
         defaultValue: [],
-        get() {
-            const rawValue = this.getDataValue('imagens_adicionais');
-            return this.formatAdditionalImages(rawValue);
-        },
-        set(value) {
-            this.setDataValue('imagens_adicionais', this.cleanAdditionalImages(value));
+        validate: {
+            isValidImages(value) {
+                if (value && !Array.isArray(value)) {
+                    throw new Error('Imagens adicionais deve ser um array');
+                }
+                if (value && value.length > 10) {
+                    throw new Error('Máximo de 10 imagens adicionais permitidas');
+                }
+                // Validar cada URL se for fornecida
+                if (value && Array.isArray(value)) {
+                    value.forEach((url, index) => {
+                        if (url && typeof url === 'string' && url.length > 0) {
+                            try {
+                                new URL(url);
+                            } catch {
+                                throw new Error(`URL da imagem adicional ${index + 1} é inválida`);
+                            }
+                        }
+                    });
+                }
+            }
         }
     },
     tags: {
@@ -117,6 +130,9 @@ const Product = sequelize.define('Product', {
             isValidTags(value) {
                 if (value && !Array.isArray(value)) {
                     throw new Error('Tags deve ser um array');
+                }
+                if (value && value.length > 20) {
+                    throw new Error('Máximo de 20 tags permitidas');
                 }
             }
         }
@@ -143,16 +159,6 @@ const Product = sequelize.define('Product', {
                 msg: 'Condição deve ser: novo, usado ou recondicionado'
             }
         }
-    },
-    // Novo campo para melhor controle das imagens
-    imagem_filename: {
-        type: DataTypes.STRING,
-        allowNull: true
-    },
-    imagens_adicionais_filenames: {
-        type: DataTypes.JSON,
-        allowNull: true,
-        defaultValue: []
     }
 }, {
     timestamps: true,
@@ -170,22 +176,27 @@ const Product = sequelize.define('Product', {
                 product.tags = [];
             }
 
-            if (product.imagens_adicionais_filenames && !Array.isArray(product.imagens_adicionais_filenames)) {
-                product.imagens_adicionais_filenames = [];
+            // Limpar arrays vazios
+            if (product.imagens_adicionais && product.imagens_adicionais.length === 0) {
+                product.imagens_adicionais = null;
+            }
+
+            if (product.tags && product.tags.length === 0) {
+                product.tags = null;
             }
 
             // Gerar SKU automático se não fornecido
             if (!product.sku) {
-                product.sku = Product.generateSKU();
+                product.sku = Product.generateSKU(product.categoria, product.marca);
             }
 
-            // Sincronizar filenames com URLs
-            product.syncImageFilenames();
+            // Validar e normalizar URLs
+            product.normalizeImageUrls();
         },
         
         beforeSave: (product) => {
-            // Garantir que os filenames estejam sincronizados
-            product.syncImageFilenames();
+            // Garantir que as URLs estejam normalizadas
+            product.normalizeImageUrls();
         }
     },
     indexes: [
@@ -207,157 +218,196 @@ const Product = sequelize.define('Product', {
         },
         {
             fields: ['preco']
+        },
+        {
+            fields: ['marca']
+        },
+        {
+            fields: ['condicao']
         }
     ]
 });
 
 // Métodos de instância
-Product.prototype.formatImageUrl = function(rawValue) {
-    if (!rawValue) {
-        return null;
+Product.prototype.normalizeImageUrls = function() {
+    // Normalizar URL da imagem principal
+    if (this.imagem_url) {
+        this.imagem_url = this.imagem_url.trim();
+        // Garantir que seja uma URL válida
+        if (!this.isValidUrl(this.imagem_url)) {
+            throw new Error('URL da imagem principal é inválida');
+        }
     }
 
-    // Se já é uma URL completa, retorna como está
-    if (rawValue.startsWith('http://') || rawValue.startsWith('https://')) {
-        return rawValue;
-    }
-
-    // Se é um caminho local, adiciona a URL base
-    const baseUrl = process.env.APP_URL || 'http://localhost:3000';
-    return `${baseUrl}/uploads/${rawValue}`;
-};
-
-Product.prototype.cleanImageUrl = function(value) {
-    if (!value) {
-        return null;
-    }
-
-    if (value.startsWith('http://') || value.startsWith('https://')) {
-        // Remove a URL base para salvar apenas o filename
-        const baseUrl = process.env.APP_URL || 'http://localhost:3000';
-        const filename = value.replace(`${baseUrl}/uploads/`, '');
-        return filename;
-    }
-
-    return value;
-};
-
-Product.prototype.formatAdditionalImages = function(rawValue) {
-    if (!rawValue || !Array.isArray(rawValue)) {
-        return [];
-    }
-
-    const baseUrl = process.env.APP_URL || 'http://localhost:3000';
-
-    return rawValue.map(img => {
-        if (!img || typeof img !== 'string') return null;
+    // Normalizar URLs das imagens adicionais
+    if (this.imagens_adicionais && Array.isArray(this.imagens_adicionais)) {
+        this.imagens_adicionais = this.imagens_adicionais
+            .map(url => {
+                if (url && typeof url === 'string') {
+                    const trimmedUrl = url.trim();
+                    if (trimmedUrl && this.isValidUrl(trimmedUrl)) {
+                        return trimmedUrl;
+                    }
+                }
+                return null;
+            })
+            .filter(url => url !== null && url.length > 0);
         
-        // Se já é uma URL completa, retorna como está
-        if (img.startsWith('http://') || img.startsWith('https://')) {
-            return img;
+        // Remover duplicatas
+        this.imagens_adicionais = [...new Set(this.imagens_adicionais)];
+    }
+};
+
+Product.prototype.isValidUrl = function(string) {
+    try {
+        // Verifica se é uma string válida
+        if (typeof string !== 'string' || string.length === 0) {
+            return false;
         }
 
-        // Se é um caminho local, adiciona a URL base
-        return `${baseUrl}/uploads/${img}`;
-    }).filter(img => img !== null);
-};
-
-Product.prototype.cleanAdditionalImages = function(value) {
-    if (!value || !Array.isArray(value)) {
-        return [];
-    }
-
-    const baseUrl = process.env.APP_URL || 'http://localhost:3000';
-    
-    return value.map(img => {
-        if (!img || typeof img !== 'string') return null;
-
-        if (img.startsWith('http://') || img.startsWith('https://')) {
-            // Remove a URL base para salvar apenas o filename
-            return img.replace(`${baseUrl}/uploads/`, '');
+        // Verifica se começa com http:// ou https://
+        if (!string.startsWith('http://') && !string.startsWith('https://')) {
+            return false;
         }
-        return img;
-    }).filter(img => img !== null);
-};
 
-// Sincronizar filenames com URLs
-Product.prototype.syncImageFilenames = function() {
-    // Para imagem principal
-    if (this.imagem_url && !this.imagem_filename) {
-        this.imagem_filename = this.cleanImageUrl(this.imagem_url);
+        // Tenta criar uma URL (lança erro se for inválida)
+        new URL(string);
+        return true;
+    } catch (_) {
+        return false;
     }
-    
-    if (this.imagem_filename && !this.imagem_url) {
-        this.imagem_url = this.formatImageUrl(this.imagem_filename);
-    }
-
-    // Para imagens adicionais
-    if (this.imagens_adicionais && this.imagens_adicionais.length > 0 && 
-        (!this.imagens_adicionais_filenames || this.imagens_adicionais_filenames.length === 0)) {
-        this.imagens_adicionais_filenames = this.cleanAdditionalImages(this.imagens_adicionais);
-    }
-    
-    if (this.imagens_adicionais_filenames && this.imagens_adicionais_filenames.length > 0 && 
-        (!this.imagens_adicionais || this.imagens_adicionais.length === 0)) {
-        this.imagens_adicionais = this.formatAdditionalImages(this.imagens_adicionais_filenames);
-    }
-};
-
-// Método estático para gerar SKU
-Product.generateSKU = function() {
-    const timestamp = Date.now().toString(36);
-    const random = Math.random().toString(36).substring(2, 8);
-    return `SKU-${timestamp}-${random}`.toUpperCase();
-};
-
-// Método para obter apenas os filenames (útil para operações de arquivo)
-Product.prototype.getImageFilenames = function() {
-    const filenames = [];
-    
-    if (this.imagem_filename) {
-        filenames.push(this.imagem_filename);
-    }
-    
-    if (this.imagens_adicionais_filenames && Array.isArray(this.imagens_adicionais_filenames)) {
-        filenames.push(...this.imagens_adicionais_filenames);
-    }
-    
-    return filenames.filter(filename => filename && typeof filename === 'string');
 };
 
 // Método para adicionar imagem adicional
-Product.prototype.addAdditionalImage = function(filename) {
-    const cleanedFilename = this.cleanImageUrl(filename);
-    
-    if (!this.imagens_adicionais_filenames) {
-        this.imagens_adicionais_filenames = [];
+Product.prototype.addAdditionalImage = function(imageUrl) {
+    if (!this.imagens_adicionais) {
+        this.imagens_adicionais = [];
     }
     
-    if (!this.imagens_adicionais_filenames.includes(cleanedFilename)) {
-        this.imagens_adicionais_filenames.push(cleanedFilename);
-        this.imagens_adicionais = this.formatAdditionalImages(this.imagens_adicionais_filenames);
+    if (this.isValidUrl(imageUrl)) {
+        const normalizedUrl = imageUrl.trim();
+        if (!this.imagens_adicionais.includes(normalizedUrl)) {
+            this.imagens_adicionais.push(normalizedUrl);
+        }
+    } else {
+        throw new Error('URL da imagem adicional é inválida');
     }
 };
 
 // Método para remover imagem adicional
-Product.prototype.removeAdditionalImage = function(filename) {
-    const cleanedFilename = this.cleanImageUrl(filename);
-    
-    if (this.imagens_adicionais_filenames && Array.isArray(this.imagens_adicionais_filenames)) {
-        this.imagens_adicionais_filenames = this.imagens_adicionais_filenames.filter(
-            img => img !== cleanedFilename
+Product.prototype.removeAdditionalImage = function(imageUrl) {
+    if (this.imagens_adicionais && Array.isArray(this.imagens_adicionais)) {
+        const normalizedUrl = imageUrl.trim();
+        this.imagens_adicionais = this.imagens_adicionais.filter(
+            url => url !== normalizedUrl
         );
-        this.imagens_adicionais = this.formatAdditionalImages(this.imagens_adicionais_filenames);
+        
+        // Se ficar vazio, definir como null
+        if (this.imagens_adicionais.length === 0) {
+            this.imagens_adicionais = null;
+        }
     }
+};
+
+// Método para obter todas as URLs de imagem (principal + adicionais)
+Product.prototype.getAllImageUrls = function() {
+    const urls = [];
+    
+    if (this.imagem_url) {
+        urls.push(this.imagem_url);
+    }
+    
+    if (this.imagens_adicionais && Array.isArray(this.imagens_adicionais)) {
+        urls.push(...this.imagens_adicionais);
+    }
+    
+    return urls;
+};
+
+// Método para verificar se tem imagens
+Product.prototype.hasImages = function() {
+    return !!(this.imagem_url || 
+              (this.imagens_adicionais && 
+               Array.isArray(this.imagens_adicionais) && 
+               this.imagens_adicionais.length > 0));
+};
+
+// Método para obter estatísticas básicas do produto
+Product.prototype.getStats = function() {
+    return {
+        hasMainImage: !!this.imagem_url,
+        additionalImagesCount: this.imagens_adicionais ? this.imagens_adicionais.length : 0,
+        totalImages: this.getAllImageUrls().length,
+        tagsCount: this.tags ? this.tags.length : 0,
+        stockStatus: this.getStockStatus(),
+        isActive: this.ativo
+    };
+};
+
+// Método para obter status do estoque
+Product.prototype.getStockStatus = function() {
+    if (this.estoque === 0) {
+        return 'esgotado';
+    } else if (this.estoque <= 5) {
+        return 'baixo';
+    } else if (this.estoque <= 20) {
+        return 'medio';
+    } else {
+        return 'alto';
+    }
+};
+
+// Método estático para gerar SKU
+Product.generateSKU = function(categoria = 'PRO', marca = 'BRD') {
+    const timestamp = Date.now().toString().slice(-6);
+    const catCode = categoria ? categoria.substring(0, 3).toUpperCase() : 'PRO';
+    const brandCode = marca ? marca.substring(0, 3).toUpperCase() : 'BRD';
+    const random = Math.random().toString(36).substring(2, 5).toUpperCase();
+    return `${catCode}-${brandCode}-${timestamp}-${random}`;
+};
+
+// Método estático para buscar produtos por categoria
+Product.findByCategory = function(categoria, options = {}) {
+    return this.findAll({
+        where: { 
+            categoria: {
+                [sequelize.Op.like]: `%${categoria}%`
+            },
+            ativo: true
+        },
+        ...options
+    });
+};
+
+// Método estático para buscar produtos com estoque baixo
+Product.findLowStock = function(userId = null, limit = 50) {
+    const where = {
+        estoque: {
+            [sequelize.Op.lte]: 5,
+            [sequelize.Op.gt]: 0
+        },
+        ativo: true
+    };
+    
+    if (userId) {
+        where.user_id = userId;
+    }
+    
+    return this.findAll({
+        where,
+        limit: parseInt(limit),
+        order: [['estoque', 'ASC']]
+    });
 };
 
 // Sobrescrever o método toJSON para controle do que é retornado
 Product.prototype.toJSON = function() {
     const values = Object.assign({}, this.get());
     
-    // Remover campos internos se necessário
-    delete values.imagem_filename;
-    delete values.imagens_adicionais_filenames;
+    // Adicionar campos calculados
+    values.status_estoque = this.getStockStatus();
+    values.total_imagens = this.getAllImageUrls().length;
+    values.tem_imagem_principal = !!this.imagem_url;
     
     return values;
 };

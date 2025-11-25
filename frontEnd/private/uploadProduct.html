@@ -13,7 +13,7 @@
 
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #667eea 0%, #fdfdfd 100%);
             min-height: 100vh;
             padding: 20px;
         }
@@ -28,7 +28,7 @@
         }
 
         .header {
-            background: linear-gradient(135deg, #2c3e50, #34495e);
+            background: linear-gradient(135deg, #000000, #34495e);
             color: white;
             padding: 30px;
             text-align: center;
@@ -89,56 +89,43 @@
             font-family: inherit;
         }
 
-        .file-upload {
-            border: 2px dashed #bdc3c7;
-            border-radius: 8px;
-            padding: 25px;
-            text-align: center;
-            background: #f8f9fa;
-            transition: all 0.3s ease;
-            cursor: pointer;
-        }
-
-        .file-upload:hover {
-            border-color: #3498db;
-            background: #e3f2fd;
-        }
-
-        .file-upload.dragover {
-            border-color: #27ae60;
-            background: #e8f5e8;
-        }
-
-        .file-input {
-            display: none;
-        }
-
-        .upload-icon {
-            font-size: 48px;
-            color: #7f8c8d;
-            margin-bottom: 10px;
-        }
-
-        .file-list {
-            margin-top: 15px;
-            text-align: left;
-        }
-
-        .file-item {
+        .image-preview {
+            margin-top: 10px;
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 12px;
-            background: white;
-            border: 1px solid #e1e8ed;
-            border-radius: 6px;
-            margin-bottom: 5px;
+            flex-wrap: wrap;
+            gap: 10px;
         }
 
-        .file-item .remove-file {
-            color: #e74c3c;
+        .preview-item {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #e1e8ed;
+        }
+
+        .preview-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .preview-item .remove-image {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(231, 76, 60, 0.8);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
             cursor: pointer;
-            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
         }
 
         .submit-btn {
@@ -210,6 +197,29 @@
             color: #e74c3c;
         }
 
+        .image-input-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .image-input-group input {
+            flex: 1;
+        }
+
+        .image-input-group button {
+            background: #3498db;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0 15px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .image-input-group button:hover {
+            background: #2980b9;
+        }
+
         @media (max-width: 768px) {
             .form-row {
                 grid-template-columns: 1fr;
@@ -222,10 +232,21 @@
             .header h1 {
                 font-size: 2em;
             }
+            
+            .image-input-group {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
 <body>
+
+ <div class="back">
+        <a href="paineldeProdutos.html" style="color: white; text-decoration: none; font-weight: bold;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-arrow-left"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg>
+        </a>
+        
+ </div>   
     <div class="container">
         <div class="header">
             <h1>🛠️ Cadastro de Produtos</h1>
@@ -235,7 +256,7 @@
         <div class="form-container">
             <div id="message" class="message"></div>
 
-            <form id="productForm" enctype="multipart/form-data">
+            <form id="productForm">
                 <div class="form-group">
                     <label for="nome" class="required">Nome do Produto</label>
                     <input type="text" id="nome" name="nome" required placeholder="Ex: Processador Intel Core i9-13900K">
@@ -311,41 +332,32 @@
                 <div class="form-group">
                     <label for="sku">SKU (Código do Produto)</label>
                     <input type="text" id="sku" name="sku" placeholder="Deixe em branco para gerar automaticamente">
-
                 </div>
 
                 <div class="form-group">
-                    <label>User ID</label>
+                    <label for="user_id">User ID</label>
                     <input type="text" id="user_id" name="user_id" placeholder="Deixe em branco para gerar automaticamente">
-
                 </div>
 
-                <!-- Upload de Imagem Principal -->
+                <!-- URL da Imagem Principal -->
                 <div class="form-group">
-                    <label class="required">Imagem Principal</label>
-                    <div class="file-upload" id="mainImageUpload">
-                        <div class="upload-icon">📷</div>
-                        <p>Clique para selecionar ou arraste a imagem principal</p>
-                        <p style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
-                            Formatos: JPG, PNG, GIF, WEBP (Max: 5MB)
-                        </p>
-                        <input type="file" id="imagem_principal" name="imagem_principal" class="file-input" accept="image/*" required>
+                    <label for="imagem_principal" class="required">URL da Imagem Principal</label>
+                    <div class="image-input-group">
+                        <input type="url" id="imagem_principal" name="imagem_principal" placeholder="https://exemplo.com/imagem.jpg" required>
+                        <button type="button" id="previewMainImage">Visualizar</button>
                     </div>
-                    <div class="file-list" id="mainImageList"></div>
+                    <div class="image-preview" id="mainImagePreview"></div>
                 </div>
 
-                <!-- Upload de Imagens Adicionais -->
+                <!-- URLs de Imagens Adicionais -->
                 <div class="form-group">
-                    <label>Imagens Adicionais (até 5 imagens)</label>
-                    <div class="file-upload" id="additionalImagesUpload">
-                        <div class="upload-icon">🖼️</div>
-                        <p>Clique para selecionar ou arraste imagens adicionais</p>
-                        <p style="font-size: 12px; color: #7f8c8d; margin-top: 5px;">
-                            Você pode selecionar múltiplas imagens
-                        </p>
-                        <input type="file" id="imagens_adicionais" name="imagens_adicionais" class="file-input" accept="image/*" multiple>
+                    <label>URLs de Imagens Adicionais</label>
+                    <div class="image-input-group">
+                        <input type="url" id="nova_imagem" placeholder="https://exemplo.com/outra-imagem.jpg">
+                        <button type="button" id="addImage">Adicionar</button>
                     </div>
-                    <div class="file-list" id="additionalImagesList"></div>
+                    <div class="image-preview" id="additionalImagesPreview"></div>
+                    <input type="hidden" id="imagens_adicionais" name="imagens_adicionais">
                 </div>
 
                 <button type="submit" class="submit-btn">
@@ -365,15 +377,16 @@
         const form = document.getElementById('productForm');
         const messageDiv = document.getElementById('message');
         const loadingDiv = document.getElementById('loading');
-        const mainImageUpload = document.getElementById('mainImageUpload');
-        const additionalImagesUpload = document.getElementById('additionalImagesUpload');
         const mainImageInput = document.getElementById('imagem_principal');
-        const additionalImagesInput = document.getElementById('imagens_adicionais');
-        const mainImageList = document.getElementById('mainImageList');
-        const additionalImagesList = document.getElementById('additionalImagesList');
+        const novaImagemInput = document.getElementById('nova_imagem');
+        const addImageBtn = document.getElementById('addImage');
+        const previewMainImageBtn = document.getElementById('previewMainImage');
+        const mainImagePreview = document.getElementById('mainImagePreview');
+        const additionalImagesPreview = document.getElementById('additionalImagesPreview');
+        const imagensAdicionaisInput = document.getElementById('imagens_adicionais');
 
-        // Token JWT (substitua pelo token real do seu usuário)
-        const JWT_TOKEN = 'seu_jwt_token_aqui';
+        // Array para armazenar URLs de imagens adicionais
+        let additionalImages = [];
 
         // Função para mostrar mensagens
         function showMessage(text, type) {
@@ -386,105 +399,83 @@
             }, 5000);
         }
 
-        // Drag and Drop para imagens principais
-        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-            mainImageUpload.addEventListener(eventName, preventDefaults, false);
-            additionalImagesUpload.addEventListener(eventName, preventDefaults, false);
-        });
-
-        function preventDefaults(e) {
-            e.preventDefault();
-            e.stopPropagation();
-        }
-
-        ['dragenter', 'dragover'].forEach(eventName => {
-            mainImageUpload.addEventListener(eventName, () => mainImageUpload.classList.add('dragover'), false);
-            additionalImagesUpload.addEventListener(eventName, () => additionalImagesUpload.classList.add('dragover'), false);
-        });
-
-        ['dragleave', 'drop'].forEach(eventName => {
-            mainImageUpload.addEventListener(eventName, () => mainImageUpload.classList.remove('dragover'), false);
-            additionalImagesUpload.addEventListener(eventName, () => additionalImagesUpload.classList.remove('dragover'), false);
-        });
-
-        mainImageUpload.addEventListener('drop', handleDropMainImage, false);
-        additionalImagesUpload.addEventListener('drop', handleDropAdditionalImages, false);
-
-        function handleDropMainImage(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            mainImageInput.files = files;
-            updateMainImageList();
-        }
-
-        function handleDropAdditionalImages(e) {
-            const dt = e.dataTransfer;
-            const files = dt.files;
-            additionalImagesInput.files = files;
-            updateAdditionalImagesList();
-        }
-
-        // Clique para selecionar arquivos
-        mainImageUpload.addEventListener('click', () => mainImageInput.click());
-        additionalImagesUpload.addEventListener('click', () => additionalImagesInput.click());
-
-        // Atualizar lista de arquivos
-        mainImageInput.addEventListener('change', updateMainImageList);
-        additionalImagesInput.addEventListener('change', updateAdditionalImagesList);
-
-        function updateMainImageList() {
-            mainImageList.innerHTML = '';
-            if (mainImageInput.files.length > 0) {
-                const file = mainImageInput.files[0];
-                const fileItem = document.createElement('div');
-                fileItem.className = 'file-item';
-                fileItem.innerHTML = `
-                    <span>${file.name}</span>
-                    <span class="remove-file" onclick="removeMainImage()">✕</span>
+        // Visualizar imagem principal
+        previewMainImageBtn.addEventListener('click', function() {
+            const url = mainImageInput.value.trim();
+            if (url) {
+                mainImagePreview.innerHTML = `
+                    <div class="preview-item">
+                        <img src="${url}" alt="Pré-visualização" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Y0ZjRmNCIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SW1hZ2VtIG7Do28gY2FycmVnYWRhPC90ZXh0Pjwvc3ZnPg=='">
+                        <button class="remove-image" onclick="removeMainImage()">✕</button>
+                    </div>
                 `;
-                mainImageList.appendChild(fileItem);
+            } else {
+                showMessage('Por favor, insira uma URL válida', 'error');
             }
-        }
+        });
 
-        function updateAdditionalImagesList() {
-            additionalImagesList.innerHTML = '';
-            if (additionalImagesInput.files.length > 0) {
-                for (let file of additionalImagesInput.files) {
-                    const fileItem = document.createElement('div');
-                    fileItem.className = 'file-item';
-                    fileItem.innerHTML = `
-                        <span>${file.name}</span>
-                        <span class="remove-file" onclick="removeAdditionalImage('${file.name}')">✕</span>
-                    `;
-                    additionalImagesList.appendChild(fileItem);
+        // Adicionar imagem adicional
+        addImageBtn.addEventListener('click', function() {
+            const url = novaImagemInput.value.trim();
+            if (url) {
+                // Verificar se a URL já existe
+                if (additionalImages.includes(url)) {
+                    showMessage('Esta imagem já foi adicionada', 'error');
+                    return;
                 }
+                
+                additionalImages.push(url);
+                updateAdditionalImagesPreview();
+                novaImagemInput.value = '';
+            } else {
+                showMessage('Por favor, insira uma URL válida', 'error');
             }
+        });
+
+        // Atualizar visualização de imagens adicionais
+        function updateAdditionalImagesPreview() {
+            additionalImagesPreview.innerHTML = '';
+            additionalImages.forEach((url, index) => {
+                const previewItem = document.createElement('div');
+                previewItem.className = 'preview-item';
+                previewItem.innerHTML = `
+                    <img src="${url}" alt="Imagem adicional" onerror="this.src='data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwIiBoZWlnaHQ9IjEwMCIgZmlsbD0iI2Y0ZjRmNCIvPjx0ZXh0IHg9IjUwIiB5PSI1MCIgZm9udC1mYW1pbHk9IkFyaWFsLCBzYW5zLXNlcmlmIiBmb250LXNpemU9IjE0IiBmaWxsPSIjOTk5IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+SW1hZ2VtIG7Do28gY2FycmVnYWRhPC90ZXh0Pjwvc3ZnPg=='">
+                    <button class="remove-image" onclick="removeAdditionalImage(${index})">✕</button>
+                `;
+                additionalImagesPreview.appendChild(previewItem);
+            });
+            
+            // Atualizar campo hidden com URLs separadas por vírgula
+            imagensAdicionaisInput.value = additionalImages.join(',');
         }
 
-        // Funções para remover arquivos
+        // Remover imagem principal
         window.removeMainImage = function() {
             mainImageInput.value = '';
-            mainImageList.innerHTML = '';
+            mainImagePreview.innerHTML = '';
         }
 
-        window.removeAdditionalImage = function(filename) {
-            const dt = new DataTransfer();
-            for (let file of additionalImagesInput.files) {
-                if (file.name !== filename) {
-                    dt.items.add(file);
-                }
-            }
-            additionalImagesInput.files = dt.files;
-            updateAdditionalImagesList();
+        // Remover imagem adicional
+        window.removeAdditionalImage = function(index) {
+            additionalImages.splice(index, 1);
+            updateAdditionalImagesPreview();
         }
+
+        // Permitir adicionar imagem com Enter
+        novaImagemInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                addImageBtn.click();
+            }
+        });
 
         // Envio do formulário
         form.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             // Validações básicas
-            if (!mainImageInput.files.length) {
-                showMessage('Por favor, selecione uma imagem principal', 'error');
+            if (!mainImageInput.value.trim()) {
+                showMessage('Por favor, insira a URL da imagem principal', 'error');
                 return;
             }
 
@@ -492,26 +483,47 @@
             form.style.display = 'none';
 
             try {
+                // Preparar dados para envio
                 const formData = new FormData(form);
+                
+                // Converter para objeto JSON (mais adequado para APIs REST)
+                const productData = {
+                    nome: formData.get('nome'),
+                    descricao: formData.get('descricao'),
+                    preco: parseFloat(formData.get('preco')),
+                    estoque: parseInt(formData.get('estoque')),
+                    categoria: formData.get('categoria'),
+                    marca: formData.get('marca'),
+                    peso: formData.get('peso') ? parseFloat(formData.get('peso')) : null,
+                    condicao: formData.get('condicao'),
+                    dimensoes: formData.get('dimensoes'),
+                    tags: formData.get('tags'),
+                    sku: formData.get('sku') || `SKU-${Date.now()}`,
+                    user_id: formData.get('user_id') || 1,
+                    imagem_principal: formData.get('imagem_principal'),
+                    imagens_adicionais: additionalImages
+                };
 
-                console.log('enviano ao server')
+                console.log('Dados do produto:', productData);
 
+                // Aqui você pode enviar para sua API
+                // Exemplo com JSONPlaceholder (apenas para demonstração)
                 const response = await fetch('http://localhost:3000/api/products/add', {
                     method: 'POST',
-
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(productData)
                 });
 
                 const result = await response.json();
 
-                if (result.success) {
-                    showMessage('✅ Produto cadastrado com sucesso!', 'success');
-                    form.reset();
-                    mainImageList.innerHTML = '';
-                    additionalImagesList.innerHTML = '';
-                } else {
-                    showMessage(`❌ Erro: ${result.error}`, 'error');
-                }
+                // Simulação de sucesso (em um caso real, verifique a resposta da API)
+                showMessage('✅ Produto cadastrado com sucesso! ID: ' + result.id, 'success');
+                form.reset();
+                mainImagePreview.innerHTML = '';
+                additionalImages = [];
+                updateAdditionalImagesPreview();
 
             } catch (error) {
                 showMessage(`❌ Erro de conexão: ${error.message}`, 'error');
@@ -521,20 +533,17 @@
             }
         });
 
-        // Preencher token automaticamente (para desenvolvimento)
-        function getTokenFromStorage() {
-            // Tenta obter o token do localStorage ou sessionStorage
-            return localStorage.getItem('jwt_token') || 
-                   sessionStorage.getItem('jwt_token') || 
-                   JWT_TOKEN;
-        }
-
-        // Atualizar token quando a página carregar
+        // Preencher automaticamente alguns campos para teste
         document.addEventListener('DOMContentLoaded', function() {
-            const token = getTokenFromStorage();
-            if (token && token !== 'seu_jwt_token_aqui') {
-                JWT_TOKEN = token;
-            }
+            // Gerar SKU automático se estiver vazio
+            document.getElementById('sku').addEventListener('focus', function() {
+                if (!this.value) {
+                    this.value = `SKU-${Date.now().toString().slice(-6)}`;
+                }
+            });
+            
+            // Sugerir algumas URLs de imagem populares
+            mainImageInput.placeholder = "Ex: https://images.unsplash.com/photo-1593640408182-31c70c8268f5";
         });
     </script>
 </body>

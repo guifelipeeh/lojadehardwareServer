@@ -480,6 +480,19 @@ formatImageUrl(filename) {
 }
    
 
+    async getProductById(id) {
+        const product = await Product.findByPk(id);
+        return product;
+    }
 }
+async function seekBycategory(category) {
+    const products = await Product.findAll({
+        where: {
+            categoria: category
+        }
+    });
+    return products;
+}   
+
 
 module.exports = new ProductService();

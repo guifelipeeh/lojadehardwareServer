@@ -1166,16 +1166,33 @@
             try {
                 showLoading(true);
                 
-                const response = await fetch('http://localhost:3000/api/products/getAllProducts');
+                const response = await fetch('http://localhost:3000/api/products/');
                 
                 if (!response.ok) {
                     throw new Error(`Erro HTTP: ${response.status}`);
                 }
                 
-                const productsData = await response.json();
+                const result = await response.json();
+
+                console.log('Dados brutos recebidos:', result);
                 
-                // Atualizar o array global de produtos com os dados da API
-                products = productsData;
+                // Verificar a estrutura da resposta
+                console.log('Resposta da API:', result);
+                
+                // Ajustar conforme a estrutura real da sua API
+                if (result.success && Array.isArray(result.data)) {
+                    // Se a API retorna { success: true, data: [...] }
+                    products = result.data;
+                } else if (Array.isArray(result)) {
+                    // Se a API retorna diretamente um array
+                    products = result;
+                } else if (result.products && Array.isArray(result.products)) {
+                    // Se a API retorna { products: [...] }
+                    products = result.products;
+                } else {
+                    console.warn('Estrutura da resposta não reconhecida:', result);
+                    products = [];
+                }
                 
                 console.log('Produtos carregados:', products);
                 
@@ -1185,12 +1202,22 @@
             } catch (error) {
                 console.error('Erro ao carregar produtos:', error);
                 showNotification('Erro ao carregar produtos: ' + error.message, 'error');
+                products = []; // Garantir que products seja um array vazio em caso de erro
             } finally {
                 showLoading(false);
             }
         }
 
+        function ensureProductsArray() {
+            if (!Array.isArray(products)) {
+                console.warn('Products não é um array, convertendo para array vazio');
+                products = [];
+            }
+        }
+
         function getFilteredProducts() {
+            ensureProductsArray(); // Garantir que products seja um array
+            
             const searchTerm = document.getElementById('searchInput').value.toLowerCase();
             const categoryFilter = document.getElementById('filterCategory').value;
             const stockFilter = document.getElementById('filterStock').value;
@@ -1199,20 +1226,21 @@
 
             return products.filter(product => {
                 const matchesSearch = !searchTerm || 
-                    product.nome.toLowerCase().includes(searchTerm) ||
+                    (product.nome && product.nome.toLowerCase().includes(searchTerm)) ||
                     (product.descricao && product.descricao.toLowerCase().includes(searchTerm)) ||
                     (product.marca && product.marca.toLowerCase().includes(searchTerm));
                 
                 const matchesCategory = !categoryFilter || product.categoria === categoryFilter;
-                const matchesPrice = parseFloat(product.preco) >= priceMin && parseFloat(product.preco) <= priceMax;
+                const matchesPrice = parseFloat(product.preco || 0) >= priceMin && parseFloat(product.preco || 0) <= priceMax;
                 
                 let matchesStock = true;
                 if (stockFilter) {
+                    const estoque = parseInt(product.estoque || 0);
                     switch(stockFilter) {
-                        case 'high': matchesStock = product.estoque > 20; break;
-                        case 'medium': matchesStock = product.estoque >= 6 && product.estoque <= 20; break;
-                        case 'low': matchesStock = product.estoque <= 5 && product.estoque > 0; break;
-                        case 'out': matchesStock = product.estoque === 0; break;
+                        case 'high': matchesStock = estoque > 20; break;
+                        case 'medium': matchesStock = estoque >= 6 && estoque <= 20; break;
+                        case 'low': matchesStock = estoque <= 5 && estoque > 0; break;
+                        case 'out': matchesStock = estoque === 0; break;
                     }
                 }
 
@@ -1223,26 +1251,29 @@
         function sortProducts(productsList) {
             return [...productsList].sort((a, b) => {
                 switch(currentSort) {
-                    case 'name': return a.nome.localeCompare(b.nome);
-                    case 'name_desc': return b.nome.localeCompare(a.nome);
-                    case 'price_high': return parseFloat(b.preco) - parseFloat(a.preco);
-                    case 'price_low': return parseFloat(a.preco) - parseFloat(b.preco);
-                    case 'stock_high': return b.estoque - a.estoque;
-                    case 'stock_low': return a.estoque - b.estoque;
-                    case 'recent': return new Date(b.data_criacao) - new Date(a.data_criacao);
-                    default: return a.id - b.id;
+                    case 'name': return (a.nome || '').localeCompare(b.nome || '');
+                    case 'name_desc': return (b.nome || '').localeCompare(a.nome || '');
+                    case 'price_high': return parseFloat(b.preco || 0) - parseFloat(a.preco || 0);
+                    case 'price_low': return parseFloat(a.preco || 0) - parseFloat(b.preco || 0);
+                    case 'stock_high': return parseInt(b.estoque || 0) - parseInt(a.estoque || 0);
+                    case 'stock_low': return parseInt(a.estoque || 0) - parseInt(b.estoque || 0);
+                    case 'recent': return new Date(b.data_criacao || 0) - new Date(a.data_criacao || 0);
+                    default: return (a.id || 0) - (b.id || 0);
                 }
             });
         }
 
         function getStockClass(stock) {
-            if (stock === 0) return 'stock-low';
-            if (stock <= 5) return 'stock-low';
-            if (stock <= 20) return 'stock-medium';
+            const estoque = parseInt(stock || 0);
+            if (estoque === 0) return 'stock-low';
+            if (estoque <= 5) return 'stock-low';
+            if (estoque <= 20) return 'stock-medium';
             return 'stock-high';
         }
 
         function renderProducts() {
+            ensureProductsArray(); // Garantir que products seja um array
+            
             const filteredProducts = getFilteredProducts();
             const sortedProducts = sortProducts(filteredProducts);
             const startIndex = (currentPage - 1) * productsPerPage;
@@ -1270,6 +1301,7 @@
                     const stockClass = getStockClass(product.estoque);
                     const isSelected = selectedProducts.has(product.id);
 
+                    const row = document.createElement('tr');
                     row.innerHTML = `
                         <td>
                             <input type="checkbox" class="product-checkbox" value="${product.id}" 
@@ -1280,17 +1312,17 @@
                             <div class="d-flex align-items-center">
                                 <div class="product-image me-2">${firstLetter}</div>
                                 <div>
-                                    <div class="fw-semibold">${product.nome}</div>
+                                    <div class="fw-semibold">${product.nome || 'Sem nome'}</div>
                                     <small class="text-muted">${product.marca || 'Sem marca'}</small>
                                 </div>
                             </div>
                         </td>
                         <td>
-                            <span class="badge-category bg-primary">${product.categoria}</span>
+                            <span class="badge-category bg-primary">${product.categoria || 'Sem categoria'}</span>
                         </td>
-                        <td class="price-tag">R$ ${parseFloat(product.preco).toFixed(2)}</td>
+                        <td class="price-tag">R$ ${parseFloat(product.preco || 0).toFixed(2)}</td>
                         <td>
-                            <span class="stock-badge ${stockClass}">${product.estoque} unidades</span>
+                            <span class="stock-badge ${stockClass}">${product.estoque || 0} unidades</span>
                         </td>
                         <td>${product.marca || '-'}</td>
                         <td>
@@ -1364,10 +1396,12 @@
         }
 
         function updateStatistics() {
+            ensureProductsArray(); // Garantir que products seja um array
+            
             const total = products.length;
             const active = products.filter(p => p.ativo).length;
-            const lowStock = products.filter(p => p.estoque <= 5 && p.estoque > 0).length;
-            const totalValue = products.reduce((sum, p) => sum + (parseFloat(p.preco) * p.estoque), 0);
+            const lowStock = products.filter(p => parseInt(p.estoque || 0) <= 5 && parseInt(p.estoque || 0) > 0).length;
+            const totalValue = products.reduce((sum, p) => sum + (parseFloat(p.preco || 0) * parseInt(p.estoque || 0)), 0);
 
             document.getElementById('totalProducts').textContent = total;
             document.getElementById('activeProducts').textContent = active;

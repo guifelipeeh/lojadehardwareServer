@@ -10,14 +10,14 @@ const router = express.Router();
 //router.use(authMiddleware);
 
 // Configuração de campos para upload
-const uploadFields = upload.fields([
+/*const uploadFields = upload.fields([
     { name: 'imagem_principal', maxCount: 1 },
     { name: 'imagens_adicionais', maxCount: 10 }
-]);
+]);*/
 
 // Rotas com upload de arquivos
-router.post('/add', uploadFields, handleMulterError, productController.createProduct);
-router.put('/:id', uploadFields, handleMulterError, productController.updateProduct);
+router.post('/add',  productController.createProduct);
+router.put('/:id',  productController.updateProduct);
 
 // Rotas sem upload de arquivos
 router.get('/', productController.getAllProducts);
@@ -27,5 +27,5 @@ router.get('/statistics', productController.getProductStatistics);
 router.get('/:id', productController.getProductById);
 router.delete('/:id', productController.deleteProduct);
 router.delete('/:id/images/:imageFilename', productController.removeProductImage);
-
+router.get('/category/:category', productController.seekByCategory);
 module.exports = router;
